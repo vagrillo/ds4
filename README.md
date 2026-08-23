@@ -4,7 +4,7 @@
 
 **DwarfStar** is a small native inference engine optimized first for
 **DeepSeek V4 Flash**. It also supports **GLM 5.2**, **Qwen3.6-35B-A3B
-(qwen35moe)** on Metal, and, on very high-memory
+(qwen35moe)** on Metal (added by vagrillo), and, on very high-memory
 machines, **DeepSeek V4 PRO**. It is self-contained and deliberately narrow,
 not a general GGUF runner. Model loading, prompt rendering, tool calls, KV
 state, the HTTP server, and the coding agent are built and tested together.
@@ -185,6 +185,9 @@ GLM inference uses the Metal, CUDA, or ROCm graph backend. Directional steering,
 file are not supported for GLM yet.
 
 ### Qwen3.6-35B-A3B (qwen35moe)
+
+> **Added by vagrillo.** This subsection describes an addition of the
+> `qwen35moe-support` branch, not (yet) part of upstream DwarfStar.
 
 Qwen3.6-35B-A3B support targets the Unsloth dynamic quant
 `Qwen3.6-35B-A3B-UD-Q6_K_XL.gguf` (fetch it from Unsloth on Hugging Face; there
@@ -422,6 +425,9 @@ make strix-halo
 ```
 
 ## Dynamic routed-expert selection
+
+> **Added by vagrillo.** This section describes additions of the
+> `qwen35moe-support` branch, not (yet) part of upstream DwarfStar.
 
 The implementation details and design rationale for everything in this
 section are in [dynamicmoeinference.md](dynamicmoeinference.md).
