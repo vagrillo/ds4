@@ -456,7 +456,7 @@ routing for a denser, slower decode:
 
 When N exceeds the model default, the extra experts (ranks 9..N) do not
 enter at full strength: their influence decays linearly from 99% at rank 9
-down to 5% at rank N, applied to the router probability before the
+down to 50% at rank N, applied to the router probability before the
 renormalization, so the added experts contribute progressively less while
 the native top-8 keep the output scale. `--q35-no-expert-decay` restores
 full influence for every selected expert.

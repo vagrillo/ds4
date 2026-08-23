@@ -565,7 +565,7 @@ kernel void kernel_qwen35_ffn_enter(
         /* Expansion decay: when n_used exceeds the model's native top-N,
          * every kept expert ranked above the native count gets a linearly
          * decaying influence factor, 0.99 for the first extra rank down to
-         * 0.05 for the last one (midpoint when there is a single extra).
+         * 0.50 for the last one (midpoint when there is a single extra).
          * Applied to the raw probability BEFORE renormalization, so the
          * native experts keep the output scale and the extras fade out. */
         if (args.n_used > args.n_used_native && args.n_used_native > 0u) {
@@ -574,7 +574,7 @@ kernel void kernel_qwen35_ffn_enter(
                 const float t = extra > 1u
                     ? (float)(j - args.n_used_native) / (float)(extra - 1u)
                     : 0.5f;
-                sel_w[j] *= 0.99f + (0.05f - 0.99f) * t;
+                sel_w[j] *= 0.99f + (0.50f - 0.99f) * t;
             }
         }
         float wsum = 0.0f;

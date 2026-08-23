@@ -10,7 +10,7 @@ lives.
 |---|---|---|
 | Switches | `--q35-experts N`, `--q35-expert-threshold P` | `--dsv4-experts N`, `--dsv4-expert-threshold P` |
 | Direction | down **and up** (expansion) | down only, 1-6 |
-| Expansion influence | linear 99%..5% decay (`--q35-no-expert-decay` to disable) | n/a |
+| Expansion influence | linear 99%..50% decay (`--q35-no-expert-decay` to disable) | n/a |
 | Default N | model value (8) | model value (6) |
 | N range | 1..`expert_count` | 1-6 |
 | Requires `--ssd-streaming` | no | yes |
@@ -33,7 +33,7 @@ selecting more experts than the model's default routing (up to
 `expert_count`) computes a denser approximation of the full MoE output at a
 proportionally higher compute cost. This can recover a little quality on
 tasks where the router's top-8 is a tight bottleneck. By default the added
-experts enter with a linearly decayed influence (99% down to 5%), since
+experts enter with a linearly decayed influence (99% down to 50%), since
 the model never trained them to be full-strength at those ranks.
 
 ## The shared threshold rule
@@ -57,15 +57,15 @@ The router of Qwen3.6-35B-A3B was trained to mix exactly 8 routed experts
 per token. When `--q35-experts N` expands the selection beyond that native
 count, the extra experts enter **with a progressively decaying influence**
 instead of full strength: a linear factor that starts at 99% for rank 9
-(the first extra) and falls to 5% at rank N (the last extra). If exactly one
-extra expert is selected (N = 9), it gets the midpoint, 52%.
+(the first extra) and falls to 50% at rank N (the last extra). If exactly one
+extra expert is selected (N = 9), it gets the midpoint, 74.5%.
 
 The factor multiplies the expert's raw router probability **before** the
 kept weights are renormalized:
 
 ```
 w(rank k) = factor(k) * p(rank k) / sum_j(factor(j) * p(j))
-factor(k) = 0.99 + (0.05 - 0.99) * (k - 8) / (N - 9)    for k = 9..N
+factor(k) = 0.99 + (0.50 - 0.99) * (k - 8) / (N - 9)    for k = 9..N
 ```
 
 Applying the decay before the renormalization is what makes it well
@@ -78,7 +78,7 @@ Factors for `--q35-experts 20`:
 
 | rank | 9  | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 |
 |------|----|----|----|----|----|----|----|----|----|----|----|----|
-| factor | 99% | 90% | 82% | 73% | 65% | 56% | 48% | 39% | 31% | 22% | 14% | 5% |
+| factor | 99% | 95% | 90% | 86% | 81% | 77% | 72% | 68% | 63% | 59% | 54% | 50% |
 
 Notes:
 
@@ -108,7 +108,7 @@ Qwen3.6-35B-A3B runs fully resident on Metal through fused kernels
   survived the cut. The sigmoid-gated shared expert is unaffected.
 * When N exceeds the model's native top-N, the extra ranks do not get
   full influence: the kernel multiplies their raw probability by a linear
-  factor, 0.99 for the first extra rank down to 0.05 for the last one
+  factor, 0.99 for the first extra rank down to 0.50 for the last one
   (midpoint when there is exactly one extra), before the
   renormalization. The decay applies in prefill and decode alike, and
   `--q35-no-expert-decay` turns it off, giving every selected expert

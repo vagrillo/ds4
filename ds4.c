@@ -767,7 +767,7 @@ static uint32_t g_ds4_compress_ratios[DS4_MAX_LAYER] = {0};
 static float g_q35_expert_threshold = 0.0f;
 static uint32_t g_q35_expert_min_used = 0;
 /* Model's native top-N (before --q35-experts raises it): ranks above it
- * get a linear influence decay from 99% down to 5% at the new maximum. */
+ * get a linear influence decay from 99% down to 50% at the new maximum. */
 static uint32_t g_q35_expert_native_used = 0;
 
 #define DS4_MODEL_SHAPE_NAME          (g_ds4_shape.name)
@@ -57888,7 +57888,7 @@ static int ds4_engine_open_internal(ds4_engine **out,
             } else {
                 fprintf(stderr,
                         "ds4: qwen35moe routed experts per token: %u (model default %u; "
-                        "ranks %u..%u get a linear influence decay 99%%..5%%)\n",
+                        "ranks %u..%u get a linear influence decay 99%%..50%%)\n",
                         (unsigned)opt->q35_experts, (unsigned)model_used,
                         (unsigned)(model_used + 1u), (unsigned)opt->q35_experts);
             }
