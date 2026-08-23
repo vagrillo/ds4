@@ -102,6 +102,8 @@ struct ds4_metal_args_dsv4_router_select_one {
     uint32_t use_token_buffer;
     uint32_t token;
     uint32_t hash_rows;
+    float    threshold;
+    uint32_t max_experts;
 };
 
 struct ds4_metal_args_glm_router_select_one {
@@ -465,20 +467,29 @@ kernel void kernel_dsv4_router_weights_one(
         device const char *probs,
         device const char *selected,
         device       char *weights,
+        device const uint32_t *n_sel,
+        constant float &threshold,
+        constant const uint32_t &max_experts,
         uint tid [[thread_position_in_grid]]) {
     if (tid >= 6) return;
 
     device const float *p = (device const float *)probs;
     device const int   *s = (device const int *)selected;
 
+    uint count = 6u;
+    if ((threshold > 0.0f || max_experts < 6u) && n_sel != nullptr) {
+        count = n_sel[0];
+        count = count < 1u ? 1u : (count > 6u ? 6u : count);
+    }
+
     float sum = 0.0f;
-    for (uint i = 0; i < 6; i++) {
+    for (uint i = 0; i < count; i++) {
         sum += p[s[i]];
     }
     sum = max(sum, 6.103515625e-5f);
 
     device float *w = (device float *)weights;
-    w[tid] = p[s[tid]] / sum * 1.5f;
+    w[tid] = tid < count ? p[s[tid]] / sum * 1.5f : 0.0f;
 }
 
 static inline float ds4_glm_router_sigmoid(float x) {
@@ -4696,6 +4707,7 @@ kernel void kernel_dsv4_router_finalize_one(
         device const int32_t *hash,
         device const int32_t *tokens,
         device int32_t *selected,
+        device uint32_t *n_sel,
         threadgroup float *scratch [[threadgroup(0)]],
         uint tid [[thread_position_in_threadgroup]]) {
     if (tid >= 256) return;
@@ -4715,6 +4727,13 @@ kernel void kernel_dsv4_router_finalize_one(
             for (uint i = 0; i < 6; i++) {
                 selected[i] = src[i];
             }
+            /* Hash routing has no scores to threshold: honor the expert cap
+             * by truncation, mirroring slot 0 into the unused tail slots. */
+            const uint cap = args.max_experts < 6u ? args.max_experts : 6u;
+            for (uint i = cap; i < 6; i++) {
+                selected[i] = selected[0];
+            }
+            if (n_sel != nullptr) n_sel[0] = cap;
         }
     } else {
         for (uint k = 2; k <= 256; k <<= 1) {
@@ -4738,8 +4757,35 @@ kernel void kernel_dsv4_router_finalize_one(
                 threadgroup_barrier(mem_flags::mem_threadgroup);
             }
         }
+        /* Dynamic expert cut: at most max_experts ranks are used; with
+         * threshold > 0 ranks are granted while their score >= threshold *
+         * score(rank max_experts/2); at least max_experts/4 ranks (min 1)
+         * are always kept.  Tail slots mirror slot 0's id so consumers never
+         * see unranked ids; their weight becomes 0. */
+        threadgroup float *top = scratch;
+        threadgroup uint32_t *cnt = (threadgroup uint32_t *)(scratch + 6u);
         if (tid < 6) {
             selected[tid] = idx[tid];
+            top[tid] = sel_scores[(uint)idx[tid]];
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+        if (tid == 0) {
+            uint32_t c = args.max_experts;
+            if (args.threshold > 0.0f && args.max_experts > 1u) {
+                const float ref = top[args.max_experts / 2u - 1u];
+                c = args.max_experts / 4u;
+                if (c == 0u) c = 1u;
+                for (uint32_t k = c; k < args.max_experts; k++) {
+                    if (top[k] >= args.threshold * ref) c = k + 1u;
+                    else break;
+                }
+            }
+            *cnt = c;
+            if (n_sel != nullptr) n_sel[0] = c;
+        }
+        threadgroup_barrier(mem_flags::mem_device);
+        if (tid < 6 && tid >= *cnt) {
+            selected[tid] = selected[0];
         }
     }
     threadgroup_barrier(mem_flags::mem_threadgroup);
@@ -4757,6 +4803,7 @@ kernel void kernel_dsv4_router_finalize_one_simd(
         device const int32_t *hash,
         device const int32_t *tokens,
         device int32_t *selected,
+        device uint32_t *n_sel,
         threadgroup float *scratch [[threadgroup(0)]],
         uint tid [[thread_position_in_threadgroup]]) {
     if (tid >= 256 || args.hash_mode) return;
@@ -4816,8 +4863,31 @@ kernel void kernel_dsv4_router_finalize_one_simd(
         }
     }
 
+    /* Dynamic expert cut, same rule as kernel_dsv4_router_finalize_one. */
+    threadgroup float *top = score0_tg;
+    threadgroup uint32_t *cnt = (threadgroup uint32_t *)(score0_tg + 6u);
     if (tid < 6) {
         selected[tid] = idx;
+        top[tid] = score;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (tid == 0) {
+        uint32_t c = args.max_experts;
+        if (args.threshold > 0.0f && args.max_experts > 1u) {
+            const float ref = top[args.max_experts / 2u - 1u];
+            c = args.max_experts / 4u;
+            if (c == 0u) c = 1u;
+            for (uint32_t k = c; k < args.max_experts; k++) {
+                if (top[k] >= args.threshold * ref) c = k + 1u;
+                else break;
+            }
+        }
+        *cnt = c;
+        if (n_sel != nullptr) n_sel[0] = c;
+    }
+    threadgroup_barrier(mem_flags::mem_device);
+    if (tid < 6 && tid >= *cnt) {
+        selected[tid] = selected[0];
     }
 }
 
@@ -4833,6 +4903,7 @@ kernel void kernel_dsv4_router_finalize_weights_one_simd(
         device const int32_t *tokens,
         device int32_t *selected,
         device float *weights,
+        device uint32_t *n_sel,
         threadgroup float *scratch [[threadgroup(0)]],
         uint tid [[thread_position_in_threadgroup]]) {
     if (tid >= 256 || args.hash_mode) return;
@@ -4892,8 +4963,31 @@ kernel void kernel_dsv4_router_finalize_weights_one_simd(
         }
     }
 
+    /* Dynamic expert cut, same rule as kernel_dsv4_router_finalize_one. */
+    threadgroup float *top = score0_tg;
+    threadgroup uint32_t *cnt = (threadgroup uint32_t *)(score0_tg + 6u);
     if (tid < 6) {
         selected[tid] = idx;
+        top[tid] = score;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (tid == 0) {
+        uint32_t c = args.max_experts;
+        if (args.threshold > 0.0f && args.max_experts > 1u) {
+            const float ref = top[args.max_experts / 2u - 1u];
+            c = args.max_experts / 4u;
+            if (c == 0u) c = 1u;
+            for (uint32_t k = c; k < args.max_experts; k++) {
+                if (top[k] >= args.threshold * ref) c = k + 1u;
+                else break;
+            }
+        }
+        *cnt = c;
+        if (n_sel != nullptr) n_sel[0] = c;
+    }
+    threadgroup_barrier(mem_flags::mem_device);
+    if (tid < 6 && tid >= *cnt) {
+        selected[tid] = selected[0];
     }
     threadgroup_barrier(mem_flags::mem_device);
 
@@ -4902,7 +4996,7 @@ kernel void kernel_dsv4_router_finalize_weights_one_simd(
     if (tid == 0) {
         device const int32_t *s = selected;
         norm_scratch[0] = 0.0f;
-        for (uint i = 0; i < 6; i++) {
+        for (uint i = 0; i < *cnt; i++) {
             norm_scratch[0] = norm_scratch[0] + probs[s[i]];
         }
         norm_scratch[0] = max(norm_scratch[0], 6.103515625e-5f);
@@ -4911,7 +5005,7 @@ kernel void kernel_dsv4_router_finalize_weights_one_simd(
     threadgroup_barrier(mem_flags::mem_threadgroup);
     if (tid < 6) {
         device const int32_t *s = selected;
-        weights[tid] = probs[s[tid]] * norm_scratch[1];
+        weights[tid] = tid < *cnt ? probs[s[tid]] * norm_scratch[1] : 0.0f;
     }
 }
 
@@ -4928,6 +5022,7 @@ kernel void kernel_dsv4_router_transform_finalize_weights_one_simd(
         device const int32_t *tokens,
         device int32_t *selected,
         device float *weights,
+        device uint32_t *n_sel,
         threadgroup float *scratch [[threadgroup(0)]],
         uint tid [[thread_position_in_threadgroup]]) {
     if (tid >= 256 || args.hash_mode) return;
@@ -4998,8 +5093,31 @@ kernel void kernel_dsv4_router_transform_finalize_weights_one_simd(
         }
     }
 
+    /* Dynamic expert cut, same rule as kernel_dsv4_router_finalize_one. */
+    threadgroup float *top = score0_tg;
+    threadgroup uint32_t *cnt = (threadgroup uint32_t *)(score0_tg + 6u);
     if (tid < 6) {
         selected[tid] = idx;
+        top[tid] = score;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (tid == 0) {
+        uint32_t c = args.max_experts;
+        if (args.threshold > 0.0f && args.max_experts > 1u) {
+            const float ref = top[args.max_experts / 2u - 1u];
+            c = args.max_experts / 4u;
+            if (c == 0u) c = 1u;
+            for (uint32_t k = c; k < args.max_experts; k++) {
+                if (top[k] >= args.threshold * ref) c = k + 1u;
+                else break;
+            }
+        }
+        *cnt = c;
+        if (n_sel != nullptr) n_sel[0] = c;
+    }
+    threadgroup_barrier(mem_flags::mem_device);
+    if (tid < 6 && tid >= *cnt) {
+        selected[tid] = selected[0];
     }
     threadgroup_barrier(mem_flags::mem_device);
 
@@ -5008,7 +5126,7 @@ kernel void kernel_dsv4_router_transform_finalize_weights_one_simd(
     if (tid == 0) {
         device const int32_t *s = selected;
         norm_scratch[0] = 0.0f;
-        for (uint i = 0; i < 6; i++) {
+        for (uint i = 0; i < *cnt; i++) {
             norm_scratch[0] =
                 norm_scratch[0] + reloaded_probs[s[i]];
         }
@@ -5018,7 +5136,8 @@ kernel void kernel_dsv4_router_transform_finalize_weights_one_simd(
     threadgroup_barrier(mem_flags::mem_threadgroup);
     if (tid < 6) {
         device const int32_t *s = selected;
-        weights[tid] = reloaded_probs[s[tid]] * norm_scratch[1];
+        weights[tid] =
+            tid < *cnt ? reloaded_probs[s[tid]] * norm_scratch[1] : 0.0f;
     }
 }
 

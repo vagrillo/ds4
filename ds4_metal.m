@@ -30509,7 +30509,7 @@ static int ds4_gpu_encode_mul_mv_slots6_pair_swiglu(
             if (getenv("DS4_GLM_TP_DEBUG")) {
                 fprintf(stderr,
                         "ds4: %s null buffer slot=%u a=%p b=%p\n",
-                        __func__, i, (const void *)src0_a[i], (const void *)src0_b[i]);
+                        __func__, i, (const void *)(__bridge void *)src0_a[i], (const void *)(__bridge void *)src0_b[i]);
             }
             return 0;
         }
@@ -30619,7 +30619,7 @@ static int ds4_gpu_encode_mul_mv_group6_pair_swiglu(
             if (getenv("DS4_GLM_TP_DEBUG")) {
                 fprintf(stderr,
                         "ds4: %s null buffer slot=%u a=%p b=%p\n",
-                        __func__, i, (const void *)src0_a[i], (const void *)src0_b[i]);
+                        __func__, i, (const void *)(__bridge void *)src0_a[i], (const void *)(__bridge void *)src0_b[i]);
             }
             return 0;
         }
@@ -30741,8 +30741,8 @@ static int ds4_gpu_encode_mul_mv_addr_iq2_pair_swiglu(
                 fprintf(stderr,
                         "ds4: addr_pair_swiglu bad entry slot=%u entry=%p gate=%p up=%p\n",
                         i, (const void *)entries[i],
-                        entries[i] ? (const void *)entries[i]->gate_buffer : NULL,
-                        entries[i] ? (const void *)entries[i]->up_buffer : NULL);
+                        entries[i] ? (const void *)(__bridge void *)entries[i]->gate_buffer : NULL,
+                        entries[i] ? (const void *)(__bridge void *)entries[i]->up_buffer : NULL);
             }
             return 0;
         }
@@ -30938,8 +30938,8 @@ static int ds4_gpu_encode_mul_mv_addr_iq2_pair_swiglu_masked(
                 fprintf(stderr,
                         "ds4: %s bad entry slot=%u entry=%p gate=%p up=%p\n",
                         __func__, i, (const void *)entries[i],
-                        entries[i] ? (const void *)entries[i]->gate_buffer : NULL,
-                        entries[i] ? (const void *)entries[i]->up_buffer : NULL);
+                        entries[i] ? (const void *)(__bridge void *)entries[i]->gate_buffer : NULL,
+                        entries[i] ? (const void *)(__bridge void *)entries[i]->up_buffer : NULL);
             }
             return 0;
         }
@@ -31072,7 +31072,7 @@ static int ds4_gpu_encode_mul_mv_group8_pair_swiglu(
             if (getenv("DS4_GLM_TP_DEBUG")) {
                 fprintf(stderr,
                         "ds4: %s null buffer slot=%u a=%p b=%p\n",
-                        __func__, i, (const void *)src0_a[i], (const void *)src0_b[i]);
+                        __func__, i, (const void *)(__bridge void *)src0_a[i], (const void *)(__bridge void *)src0_b[i]);
             }
             return 0;
         }
@@ -38097,6 +38097,7 @@ int ds4_gpu_routed_moe_one_tensor(
         bool stream_expert_split_completed = false;
         uint32_t stream_expert_resident_mask = 0;
         uint32_t stream_expert_missing_mask = 0;
+        uint32_t stream_active_experts_dbg = 0;
         __unsafe_unretained id<MTLBuffer> gate_group6_bufs[6] = { nil, nil, nil, nil, nil, nil };
         __unsafe_unretained id<MTLBuffer> up_group6_bufs[6] = { nil, nil, nil, nil, nil, nil };
         __unsafe_unretained id<MTLBuffer> down_group6_bufs[6] = { nil, nil, nil, nil, nil, nil };
@@ -39147,6 +39148,7 @@ int ds4_gpu_routed_moe_one_tensor(
                             active_experts = nsel_v;
                         }
                         ds4_gpu_dsv4_expert_stats_note(layer_index, active_experts);
+                        stream_active_experts_dbg = active_experts;
                     }
                 }
                 for (uint32_t i = 0; i < n_expert; i++) {
@@ -40056,8 +40058,15 @@ int ds4_gpu_routed_moe_one_tensor(
                             .active_mask = stream_expert_missing_mask,
                             .accumulate = 0u,
                         };
+                        /* Down pass covers only the slots the pair stages
+                         * actually wrote: with the dynamic expert cut the
+                         * tail slots never load (their entries mirror a
+                         * possibly-missing slot 0) and their mid rows are
+                         * never produced; their weight is 0 so skipping
+                         * them is numerically identical. */
                         ds4_gpu_stream_expert_split_args all_down_args = {
-                            .active_mask = 0x3fu,
+                            .active_mask = stream_expert_resident_mask |
+                                           stream_expert_missing_mask,
                             .accumulate = 0u,
                         };
                         if (ok) {
@@ -40317,7 +40326,7 @@ int ds4_gpu_routed_moe_one_tensor(
                                             gate_rows_per_group_is_nr0);
         }
         DS4_METAL_PROFILE_MOE_ONE_STAGE("gate_up");
-        if (!ok) { if (getenv("DS4_GLM_TP_DEBUG")) fprintf(stderr, "ds4: routed_moe_one silent return at line %d (stage gate_up) path addr=%d masked=%d split=%d q4gath=%d sel=%d cache=%d active=%d sel0=%p\n", 34395, (int)use_stream_expert_addr_table, (int)use_stream_expert_masked_addr_table, (int)use_stream_expert_split_deferred, (int)use_q4_gather_slots, (int)use_selected_slots, (int)use_stream_expert_cache, (int)active_experts, (const void *)stream_slot_entries[0]); return 0; }
+        if (!ok) { if (getenv("DS4_GLM_TP_DEBUG")) fprintf(stderr, "ds4: routed_moe_one silent return at line %d (stage gate_up) path addr=%d masked=%d split=%d q4gath=%d sel=%d cache=%d activedbg=%d missing=%x sel0=%p\n", 34395, (int)use_stream_expert_addr_table, (int)use_stream_expert_masked_addr_table, (int)use_stream_expert_split_deferred, (int)use_q4_gather_slots, (int)use_selected_slots, (int)use_stream_expert_cache, (int)stream_active_experts_dbg, stream_expert_missing_mask, (const void *)stream_slot_entries[0]); return 0; }
         if (ok && (!fuse_pair_swiglu || use_q4_group24_experts)) {
             ok = ds4_gpu_encode_moe_swiglu_weight(cb,
                                                     gatebuf,
