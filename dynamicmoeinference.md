@@ -131,3 +131,34 @@ it pays one extra 4-byte read per layer inside a sync it already needed.
   that qwen35moe renormalizes while dsv4 discards the dropped weight mass,
   so the same threshold value can behave differently across the two
   models.
+
+
+
+## Pelican riding a Bicycle with Qwen3.6-35B-A3B-UD-6b_XL
+
+   Generate an SVG of a California brown pelican riding a bicycle. The bicycle must have spokes and a correctly shaped bicycle frame. The pelican must have its characteristic large pouch, and there should be a clear indication of feathers. The pelican must be clearly pedaling the bicycle. The image should show the full breeding plumage of the California brown pelican.
+
+
+**ORIGINAL**
+ --nothink  (default settings)
+ 
+ <img width="829" height="578" alt="image" src="https://github.com/user-attachments/assets/e46b818e-2e73-4b88-a50a-2b3c77e9c0b4" />
+
+
+
+**14 EXPERTS AVERAGE**
+ --nothink --q35-experts 16  --q35-expert-threshold 95
+ 
+<img width="604" height="408" alt="image" src="https://github.com/user-attachments/assets/46089da5-2a5f-4dce-8ca5-d446a725c159" />
+
+
+
+
+
+
+
+
+
+
+ 
+
