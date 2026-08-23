@@ -208,6 +208,16 @@ it pays one extra 4-byte read per layer inside a sync it already needed.
 
 
 
+**MMLU results complete**
+
+Using 20 experts, threeshold   0.8 and decay from 99% to 50%  MMLU resulta are +3.1 !!!
+
+  - A (experts 20, thr 0.8, decay): 96.88% (31/32)
+  - B (default 8): 93.75% (30/32)
+  - C (experts 20, thr 0.8, NO decay): 90.62% (29/32)
+
+
+<img width="667" height="205" alt="image" src="https://github.com/user-attachments/assets/f86147e4-3db1-4f6c-85c7-67907f2d6d9a" />
 
 
 
