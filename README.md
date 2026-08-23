@@ -3,7 +3,8 @@
 </p>
 
 **DwarfStar** is a small native inference engine optimized first for
-**DeepSeek V4 Flash**. It also supports **GLM 5.2** and, on very high-memory
+**DeepSeek V4 Flash**. It also supports **GLM 5.2**, **Qwen3.6-35B-A3B
+(qwen35moe)** on Metal, and, on very high-memory
 machines, **DeepSeek V4 PRO**. It is self-contained and deliberately narrow,
 not a general GGUF runner. Model loading, prompt rendering, tool calls, KV
 state, the HTTP server, and the coding agent are built and tested together.
@@ -178,6 +179,25 @@ and timing counters:
 GLM inference uses the Metal, CUDA, or ROCm graph backend. Directional steering,
 `--power` below 100, an explicit `--prefill-chunk`, and the external `--mtp`
 file are not supported for GLM yet.
+
+### Qwen3.6-35B-A3B (qwen35moe)
+
+Qwen3.6-35B-A3B support targets the Unsloth dynamic quant
+`Qwen3.6-35B-A3B-UD-Q6_K_XL.gguf` (fetch it from Unsloth on Hugging Face; there
+is no `download_model.sh` target for it yet). The mixed per-layer Q6_K/Q8_0
+layout is read straight from the mapped GGUF, with no requantization step.
+
+The architecture is a hybrid stack of 30 gated-delta-net layers and 10 GQA
+layers, with 256 routed experts (top-8) and a sigmoid-gated shared expert.
+Decode runs on Metal through fused kernels: router projection, top-8 selection,
+and the shared-expert gate share one dispatch; gate+up for all selected experts
+with SwiGLU folded in is another; the down projection and weighted combine
+complete the FFN. Expert selection stays fully on the GPU, so decode is never
+interrupted by a per-token readback. This took the M4 Pro 48 GB decode from
+1.95 to about 26 tok/s.
+
+The `--q35-experts` and `--q35-expert-threshold` switches below adjust how many
+routed experts are used per token.
 
 Then build:
 
@@ -396,6 +416,73 @@ make strix-halo
 ./ds4 --rocm -m gguf/GLM-5.2-UD-Q2_K_RoutedQ2K.gguf \
   --ssd-streaming --ctx 4096
 ```
+
+## Dynamic routed-expert selection
+
+Routed MoE layers normally activate a fixed number of experts per token:
+top-8 for Qwen3.6-35B-A3B, top-6 for DeepSeek V4 Flash. The switches in this
+section override that at inference time. Selecting fewer experts speeds up
+decode (in SSD streaming it also skips the SSD fetch and the expert-cache
+residency of the dropped experts); a score threshold adapts the count token
+by token instead of fixing it. The dropped experts are always the ones with
+the lowest router scores, so quality degrades gradually as the count goes
+down.
+
+### Qwen3.6-35B-A3B (qwen35moe)
+
+`--q35-experts N` selects the top-N experts by router probability and
+renormalizes their weights over the selection; the shared expert is
+unaffected. N defaults to the model value (8) and is validated against
+`expert_count`, so it also enables expert expansion beyond the default
+routing for a denser, slower decode:
+
+```sh
+./ds4 -m Qwen3.6-35B-A3B-UD-Q6_K_XL.gguf --q35-experts 4    # faster
+./ds4 -m Qwen3.6-35B-A3B-UD-Q6_K_XL.gguf --q35-experts 16   # denser
+```
+
+`--q35-expert-threshold P` uses `--q35-experts N` as the maximum and keeps
+each expert only while its router probability is at least `P x p(rank N/2)`;
+the top `N/4` experts are always selected, so every token keeps at least a
+core set. P is a fraction of that reference probability, for example:
+
+```sh
+./ds4 -m Qwen3.6-35B-A3B-UD-Q6_K_XL.gguf --q35-experts 8 --q35-expert-threshold 0.95
+```
+
+Decode speed on an M4 Pro 48 GB, Q6_K_XL, `--temp 0`:
+
+| --q35-experts | tok/s decode |
+|--------------|--------------|
+| 1            | 33.2         |
+| 4            | 29.4         |
+| 8 (default)  | 25.9         |
+| 16           | 20.6         |
+
+Both switches are qwen35moe-only and print the per-layer average expert count
+every 128 tokens (`DS4_Q35_EXPERT_STATS_EVERY=0` disables the report).
+
+### DeepSeek V4 Flash
+
+`--dsv4-experts N` caps the routed experts per token at N (1-6, default: the
+model value, 6). `--dsv4-expert-threshold P` uses that N as the maximum and,
+during `--ssd-streaming` decode, keeps each expert only while its router score
+is at least `P x score(rank N/2)`; the top `N/4` (minimum 1) experts are
+always selected. For example, with `--dsv4-experts 4` and a threshold of
+`0.95`: rank 2 is the reference, at least 1 expert is always kept, and experts
+whose score falls below 95% of the reference are dropped:
+
+```sh
+./ds4 -m ./ds4flash.gguf --ssd-streaming \
+  --dsv4-experts 4 --dsv4-expert-threshold 0.95
+```
+
+These switches act on decode only (prefill always uses the full 6 experts)
+and require `--ssd-streaming`. The first 3 hash-routed layers have no router
+scores: there, the maximum truncates the fixed per-token expert table to its
+first N entries and the threshold does not apply. The engine prints the
+per-layer average expert count every 128 tokens
+(`DS4_DSV4_EXPERT_STATS_EVERY=0` disables the report).
 
 ## Distributed inference with pipeline parallelism
 
