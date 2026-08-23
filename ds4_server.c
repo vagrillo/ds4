@@ -13653,6 +13653,8 @@ static server_config parse_options(int argc, char **argv) {
         } else if (!strcmp(arg, "--q35-experts")) {
             c.engine.q35_experts = (uint32_t)parse_int_arg(
                 need_arg(&i, argc, argv, arg), arg);
+        } else if (!strcmp(arg, "--q35-no-expert-decay")) {
+            c.engine.q35_no_expert_decay = true;
         } else if (!strcmp(arg, "--dsv4-experts")) {
             c.engine.dsv4_experts = (uint32_t)parse_int_arg(
                 need_arg(&i, argc, argv, arg), arg);

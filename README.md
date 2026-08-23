@@ -454,6 +454,13 @@ routing for a denser, slower decode:
 ./ds4 -m Qwen3.6-35B-A3B-UD-Q6_K_XL.gguf --q35-experts 16   # denser
 ```
 
+When N exceeds the model default, the extra experts (ranks 9..N) do not
+enter at full strength: their influence decays linearly from 99% at rank 9
+down to 5% at rank N, applied to the router probability before the
+renormalization, so the added experts contribute progressively less while
+the native top-8 keep the output scale. `--q35-no-expert-decay` restores
+full influence for every selected expert.
+
 `--q35-expert-threshold P` uses `--q35-experts N` as the maximum and keeps
 each expert only while its router probability is at least `P x p(rank N/2)`;
 the top `N/4` experts are always selected, so every token keeps at least a

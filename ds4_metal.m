@@ -43598,6 +43598,7 @@ typedef struct {
     uint32_t n_expert;
     uint32_t n_used;
     uint32_t min_used;
+    uint32_t n_used_native;
     float eps;
     float threshold;
     uint32_t layer;
@@ -44105,6 +44106,7 @@ int ds4_gpu_qwen35_ffn_enter_tensor(
         uint32_t n_expert,
         uint32_t n_used,
         uint32_t min_used,
+        uint32_t n_used_native,
         float eps,
         float expert_threshold,
         uint32_t layer,
@@ -44116,6 +44118,7 @@ int ds4_gpu_qwen35_ffn_enter_tensor(
         (acc_enable && !n_sel_acc) ||
         n_expert == 0 || n_expert > 512 || n_used == 0 || n_used > n_expert ||
         min_used == 0 || min_used > n_used ||
+        n_used_native == 0 || n_used_native > n_expert ||
         n_embd == 0 || n_embd % n_expert != 0) {
         return 0;
     }
@@ -44167,6 +44170,7 @@ int ds4_gpu_qwen35_ffn_enter_tensor(
         args.n_expert = n_expert;
         args.n_used = n_used;
         args.min_used = min_used;
+        args.n_used_native = n_used_native;
         args.eps = eps;
         args.threshold = expert_threshold;
         args.layer = layer;

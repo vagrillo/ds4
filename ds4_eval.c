@@ -1214,6 +1214,7 @@ typedef struct {
     uint32_t ssd_streaming_preload_experts;
     uint32_t q35_experts;
     float q35_expert_threshold;
+    bool q35_no_expert_decay;
     float dsv4_expert_threshold;
     uint32_t dsv4_experts;
     uint64_t simulate_used_memory_bytes;
@@ -1613,6 +1614,8 @@ static eval_config parse_options(int argc, char **argv) {
                 exit(2);
             }
             c.q35_experts = (uint32_t)v;
+        } else if (!strcmp(arg, "--q35-no-expert-decay")) {
+            c.q35_no_expert_decay = true;
         } else if (!strcmp(arg, "--dsv4-experts")) {
             int v = parse_nonnegative_int_arg(need_arg(&i, argc, argv, arg), arg);
             if (v <= 0) {
@@ -4206,6 +4209,7 @@ int main(int argc, char **argv) {
         .ssd_streaming_full_layers = cfg.ssd_streaming_full_layers,
         .ssd_streaming_preload_experts = cfg.ssd_streaming_preload_experts,
         .q35_experts = cfg.q35_experts,
+        .q35_no_expert_decay = cfg.q35_no_expert_decay,
         .q35_expert_threshold = cfg.q35_expert_threshold,
         .dsv4_expert_threshold = cfg.dsv4_expert_threshold,
         .dsv4_experts = cfg.dsv4_experts,

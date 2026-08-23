@@ -151,6 +151,9 @@ typedef struct {
      * probability >= fraction * p(rank N/2), capped at q35_experts and
      * floored at a quarter of it. */
     float q35_expert_threshold;
+    /* qwen35moe: give experts above the model's native top-N full influence
+     * instead of the linear 99%..5% decay (default: decay on). */
+    bool q35_no_expert_decay;
     /* deepseek4 flash: same dynamic expert cut for streaming decode, as a
      * fraction of the rank-N/2 router score (0 = disabled). */
     float dsv4_expert_threshold;

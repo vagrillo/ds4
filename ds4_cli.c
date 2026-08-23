@@ -1888,6 +1888,8 @@ static cli_config parse_options(int argc, char **argv) {
                 exit(2);
             }
             c.engine.q35_experts = (uint32_t)v;
+        } else if (!strcmp(arg, "--q35-no-expert-decay")) {
+            c.engine.q35_no_expert_decay = true;
         } else if (!strcmp(arg, "--dsv4-experts")) {
             int v = parse_nonnegative_int(need_arg(&i, argc, argv, arg), arg);
             if (v <= 0) {

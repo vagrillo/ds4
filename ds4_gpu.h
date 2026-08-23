@@ -2977,6 +2977,7 @@ int ds4_gpu_qwen35_ffn_enter_tensor(
         uint32_t              n_expert,
         uint32_t              n_used,
         uint32_t              min_used,
+        uint32_t              n_used_native,
         float                 eps,
         float                 expert_threshold,
         uint32_t              layer,

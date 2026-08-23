@@ -424,6 +424,7 @@ struct ds4_metal_args_qwen35_ffn_enter {
     uint32_t n_expert;    /* 256 */
     uint32_t n_used;      /* max routed experts per token */
     uint32_t min_used;    /* floor under the threshold cut */
+    uint32_t n_used_native; /* model default; ranks above it get decayed */
     float eps;
     float threshold;      /* fraction of rank-8 probability, 0 = disabled */
     uint32_t layer;       /* stats slot (acc[layer+1]); layer 0 counts tokens */
@@ -559,6 +560,21 @@ kernel void kernel_qwen35_ffn_enter(
                 sel_w[k] = bv;
                 sh_prob[best] = -1.0f;
                 count++;
+            }
+        }
+        /* Expansion decay: when n_used exceeds the model's native top-N,
+         * every kept expert ranked above the native count gets a linearly
+         * decaying influence factor, 0.99 for the first extra rank down to
+         * 0.05 for the last one (midpoint when there is a single extra).
+         * Applied to the raw probability BEFORE renormalization, so the
+         * native experts keep the output scale and the extras fade out. */
+        if (args.n_used > args.n_used_native && args.n_used_native > 0u) {
+            const uint extra = args.n_used - args.n_used_native;
+            for (uint j = args.n_used_native; j < count; j++) {
+                const float t = extra > 1u
+                    ? (float)(j - args.n_used_native) / (float)(extra - 1u)
+                    : 0.5f;
+                sel_w[j] *= 0.99f + (0.05f - 0.99f) * t;
             }
         }
         float wsum = 0.0f;

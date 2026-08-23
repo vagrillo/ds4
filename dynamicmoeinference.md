@@ -10,6 +10,7 @@ lives.
 |---|---|---|
 | Switches | `--q35-experts N`, `--q35-expert-threshold P` | `--dsv4-experts N`, `--dsv4-expert-threshold P` |
 | Direction | down **and up** (expansion) | down only, 1-6 |
+| Expansion influence | linear 99%..5% decay (`--q35-no-expert-decay` to disable) | n/a |
 | Default N | model value (8) | model value (6) |
 | N range | 1..`expert_count` | 1-6 |
 | Requires `--ssd-streaming` | no | yes |
@@ -31,7 +32,9 @@ In the other direction, qwen35moe also supports **expert expansion**:
 selecting more experts than the model's default routing (up to
 `expert_count`) computes a denser approximation of the full MoE output at a
 proportionally higher compute cost. This can recover a little quality on
-tasks where the router's top-8 is a tight bottleneck.
+tasks where the router's top-8 is a tight bottleneck. By default the added
+experts enter with a linearly decayed influence (99% down to 5%), since
+the model never trained them to be full-strength at those ranks.
 
 ## The shared threshold rule
 
@@ -62,6 +65,13 @@ Qwen3.6-35B-A3B runs fully resident on Metal through fused kernels
 * The selected experts' weights are **renormalized over the kept set**, so
   the routed output keeps its scale regardless of how many experts
   survived the cut. The sigmoid-gated shared expert is unaffected.
+* When N exceeds the model's native top-N, the extra ranks do not get
+  full influence: the kernel multiplies their raw probability by a linear
+  factor, 0.99 for the first extra rank down to 0.05 for the last one
+  (midpoint when there is exactly one extra), before the
+  renormalization. The decay applies in prefill and decode alike, and
+  `--q35-no-expert-decay` turns it off, giving every selected expert
+  full influence.
 * The MoE kernels (`moe_gate_up`, `moe_down`, `moe_combine`) read
   `n_sel[0]` on device and early-return for slots at or above the count:
   dropped experts are never touched. Because nothing is read back, the

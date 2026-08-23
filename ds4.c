@@ -766,6 +766,9 @@ static uint32_t g_ds4_compress_ratios[DS4_MAX_LAYER] = {0};
  * g_q35_expert_min_used (= n_used/4).  Zero threshold = fixed top-N. */
 static float g_q35_expert_threshold = 0.0f;
 static uint32_t g_q35_expert_min_used = 0;
+/* Model's native top-N (before --q35-experts raises it): ranks above it
+ * get a linear influence decay from 99% down to 5% at the new maximum. */
+static uint32_t g_q35_expert_native_used = 0;
 
 #define DS4_MODEL_SHAPE_NAME          (g_ds4_shape.name)
 #define DS4_MODEL_FAMILY              (g_ds4_shape.family)
@@ -57846,6 +57849,14 @@ static int ds4_engine_open_internal(ds4_engine **out,
     /* Top-N routed-expert override for qwen35moe: applied after validation so
      * the GGUF metadata still pins the architecture, while session buffers
      * and routing kernels pick up the requested top-N. */
+    if (opt->q35_no_expert_decay &&
+        DS4_MODEL_FAMILY != DS4_MODEL_FAMILY_QWEN35MOE) {
+        fprintf(stderr,
+                "ds4: --q35-no-expert-decay applies only to qwen35moe models\n");
+        ds4_engine_close(e);
+        *out = NULL;
+        return 1;
+    }
     if (opt->q35_experts != 0) {
         if (DS4_MODEL_FAMILY != DS4_MODEL_FAMILY_QWEN35MOE) {
             fprintf(stderr,
@@ -57863,10 +57874,29 @@ static int ds4_engine_open_internal(ds4_engine **out,
             return 1;
         }
         const uint32_t model_used = g_ds4_shape.n_expert_used;
+        /* With decay disabled the native rank equals the maximum, so the
+         * kernel's decay branch never triggers. */
+        g_q35_expert_native_used = opt->q35_no_expert_decay ?
+            opt->q35_experts : model_used;
         g_ds4_shape.n_expert_used = opt->q35_experts;
-        fprintf(stderr,
-                "ds4: qwen35moe routed experts per token: %u (model default %u)\n",
-                (unsigned)opt->q35_experts, (unsigned)model_used);
+        if (opt->q35_experts > model_used) {
+            if (opt->q35_no_expert_decay) {
+                fprintf(stderr,
+                        "ds4: qwen35moe routed experts per token: %u (model default %u; "
+                        "extra experts at full influence, decay disabled)\n",
+                        (unsigned)opt->q35_experts, (unsigned)model_used);
+            } else {
+                fprintf(stderr,
+                        "ds4: qwen35moe routed experts per token: %u (model default %u; "
+                        "ranks %u..%u get a linear influence decay 99%%..5%%)\n",
+                        (unsigned)opt->q35_experts, (unsigned)model_used,
+                        (unsigned)(model_used + 1u), (unsigned)opt->q35_experts);
+            }
+        } else {
+            fprintf(stderr,
+                    "ds4: qwen35moe routed experts per token: %u (model default %u)\n",
+                    (unsigned)opt->q35_experts, (unsigned)model_used);
+        }
     }
     /* Dynamic expert count for qwen35moe: --q35-experts becomes the max;
      * an expert is used only if its router probability >= threshold *
@@ -59715,6 +59745,8 @@ static int qwen35_eval_token_impl(ds4_session *s, int token, uint32_t pos) {
                 n_embd, DS4_N_EXPERT, DS4_N_EXPERT_USED,
                 g_q35_expert_min_used ? g_q35_expert_min_used
                                       : DS4_N_EXPERT_USED,
+                g_q35_expert_native_used ? g_q35_expert_native_used
+                                         : DS4_N_EXPERT_USED,
                 eps, g_q35_expert_threshold,
                 il, g_q35_expert_threshold > 0.0f ? 1u : 0u,
                 s->q35_n_sel_acc)) {
