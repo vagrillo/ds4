@@ -136,6 +136,10 @@ it pays one extra 4-byte read per layer inside a sync it already needed.
 
 ## Pelican riding a Bicycle with Qwen3.6-35B-A3B-UD-6b_XL
 
+   Short test using a 6bit quantized version.
+
+
+
    Generate an SVG of a California brown pelican riding a bicycle. The bicycle must have spokes and a correctly shaped bicycle frame. The pelican must have its characteristic large pouch, and there should be a clear indication of feathers. The pelican must be clearly pedaling the bicycle. The image should show the full breeding plumage of the California brown pelican.
 
 
