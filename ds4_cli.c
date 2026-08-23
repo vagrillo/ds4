@@ -1568,6 +1568,9 @@ static int run_chat_turn(ds4_engine *engine, cli_config *cfg, repl_chat *chat, c
         ds4_session_invalidate(chat->session);
     } else if (repl_chat_assistant_turn_uses_eos(engine)) {
         ds4_tokens_push(&chat->transcript, ds4_token_eos(engine));
+        /* ChatML closes every turn with <|im_end|>\n. */
+        if (ds4_engine_is_qwen35moe(engine))
+            ds4_tokenize_text(engine, "\n", &chat->transcript);
     }
 
     const double prefill_s = t_prefill1 - t_prefill0;
@@ -1877,6 +1880,42 @@ static cli_config parse_options(int argc, char **argv) {
             c.engine.quality = true;
         } else if (!strcmp(arg, "--ssd-streaming")) {
             c.engine.ssd_streaming = true;
+        } else if (!strcmp(arg, "--q35-experts")) {
+            int v = parse_nonnegative_int(need_arg(&i, argc, argv, arg), arg);
+            if (v <= 0) {
+                fprintf(stderr,
+                        "ds4: --q35-experts must be a positive expert count\n");
+                exit(2);
+            }
+            c.engine.q35_experts = (uint32_t)v;
+        } else if (!strcmp(arg, "--dsv4-experts")) {
+            int v = parse_nonnegative_int(need_arg(&i, argc, argv, arg), arg);
+            if (v <= 0) {
+                fprintf(stderr,
+                        "ds4: --dsv4-experts must be a positive expert count (1-6)\n");
+                exit(2);
+            }
+            c.engine.dsv4_experts = (uint32_t)v;
+        } else if (!strcmp(arg, "--q35-expert-threshold")) {
+            float v = parse_float_range(need_arg(&i, argc, argv, arg), arg,
+                                        0.0f, 10.0f);
+            if (v <= 0.0f) {
+                fprintf(stderr,
+                        "ds4: --q35-expert-threshold must be a positive fraction of "
+                        "the rank-N/2 expert probability (e.g. 0.95)\n");
+                exit(2);
+            }
+            c.engine.q35_expert_threshold = v;
+        } else if (!strcmp(arg, "--dsv4-expert-threshold")) {
+            float v = parse_float_range(need_arg(&i, argc, argv, arg), arg,
+                                        0.0f, 10.0f);
+            if (v <= 0.0f) {
+                fprintf(stderr,
+                        "ds4: --dsv4-expert-threshold must be a positive fraction of "
+                        "the rank-3 expert score (e.g. 0.95)\n");
+                exit(2);
+            }
+            c.engine.dsv4_expert_threshold = v;
         } else if (!strcmp(arg, "--ssd-streaming-cold")) {
             c.engine.ssd_streaming_cold = true;
         } else if (!strcmp(arg, "--ssd-streaming-cache-experts")) {

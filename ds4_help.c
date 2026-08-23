@@ -168,6 +168,10 @@ static void print_model_runtime(FILE *fp, const help_colors *c,
     opt(fp, c, "-t, --threads N", "CPU helper threads for host-side/reference work.");
     opt(fp, c, "--power N", "GPU duty-cycle target, 1..100. Default: 100");
     opt(fp, c, "--ssd-streaming", "Metal/CUDA/ROCm: opt in to SSD-backed model streaming instead of full residency.");
+    opt(fp, c, "--q35-experts N", "qwen35moe: routed top-N experts per token by router probability (default: model value, normally 8).");
+    opt(fp, c, "--q35-expert-threshold P", "qwen35moe: with --q35-experts N as max, keep each expert only while its router probability >= P x p(rank N/2); the top N/4 are always selected. P is a fraction of that probability (e.g. 0.95), range 0.01-10, default: off. Prints per-layer avg experts every 128 tokens (DS4_Q35_EXPERT_STATS_EVERY=0 disables).");
+    opt(fp, c, "--dsv4-experts N", "deepseek v4 (flash): max routed experts per token during decode, 1-6 (default: model value, 6). Decode only (prefill always uses 6); the first 3 hash-routed layers truncate to the first N table entries.");
+    opt(fp, c, "--dsv4-expert-threshold P", "deepseek v4 (flash): with --dsv4-experts N as max (default 6), during --ssd-streaming decode keep each expert only while its router score >= P x score(rank N/2); the top N/4 (min 1) are always selected. P is a fraction (e.g. 0.95), range 0.01-10, default: off. Requires --ssd-streaming, decode only (prefill always uses 6); hash layers do not apply the threshold. Prints per-layer avg experts every 128 tokens (DS4_DSV4_EXPERT_STATS_EVERY=0 disables).");
     opt(fp, c, "--ssd-streaming-cold", "SSD streaming: skip default popularity-based expert-cache preload.");
     opt(fp, c, "--ssd-streaming-cache-experts N|NGB", "SSD streaming: N is an exact dynamic expert count; NGB is a routed memory budget that also reserves two full prefill layers. Auto: 80% working set minus non-routed weights; GLM Metal caps lower.");
     opt(fp, c, "--ssd-streaming-full-layers N", "GLM Metal streaming: keep the first N routed layers fully resident. Default: auto from NGB expert budget; use 0 to disable.");

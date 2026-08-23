@@ -358,8 +358,12 @@ static bool agent_tool_syntax_assistant_turn_uses_eos(agent_tool_syntax syntax) 
 
 static void agent_worker_append_assistant_turn_end(agent_worker *w) {
     if (agent_tool_syntax_assistant_turn_uses_eos(
-            agent_tool_syntax_for_engine(w->engine)))
+            agent_tool_syntax_for_engine(w->engine))) {
         ds4_tokens_push(&w->transcript, ds4_token_eos(w->engine));
+        /* ChatML closes every turn with <|im_end|>\n. */
+        if (ds4_engine_is_qwen35moe(w->engine))
+            ds4_tokenize_text(w->engine, "\n", &w->transcript);
+    }
 }
 
 static int agent_worker_effective_ctx_size(const agent_worker *w) {
@@ -683,6 +687,42 @@ static agent_config parse_options(int argc, char **argv) {
             c.engine.quality = true;
         } else if (!strcmp(arg, "--ssd-streaming")) {
             c.engine.ssd_streaming = true;
+        } else if (!strcmp(arg, "--q35-experts")) {
+            int v = parse_nonnegative_int(need_arg(&i, argc, argv, arg), arg);
+            if (v <= 0) {
+                fprintf(stderr,
+                        "ds4-agent: --q35-experts must be a positive expert count\n");
+                exit(2);
+            }
+            c.engine.q35_experts = (uint32_t)v;
+        } else if (!strcmp(arg, "--dsv4-experts")) {
+            int v = parse_nonnegative_int(need_arg(&i, argc, argv, arg), arg);
+            if (v <= 0) {
+                fprintf(stderr,
+                        "ds4-agent: --dsv4-experts must be a positive expert count (1-6)\n");
+                exit(2);
+            }
+            c.engine.dsv4_experts = (uint32_t)v;
+        } else if (!strcmp(arg, "--q35-expert-threshold")) {
+            float v = parse_float_range(need_arg(&i, argc, argv, arg), arg,
+                                        0.0f, 10.0f);
+            if (v <= 0.0f) {
+                fprintf(stderr,
+                        "ds4-agent: --q35-expert-threshold must be a positive fraction "
+                        "of the rank-N/2 expert probability (e.g. 0.95)\n");
+                exit(2);
+            }
+            c.engine.q35_expert_threshold = v;
+        } else if (!strcmp(arg, "--dsv4-expert-threshold")) {
+            float v = parse_float_range(need_arg(&i, argc, argv, arg), arg,
+                                        0.0f, 10.0f);
+            if (v <= 0.0f) {
+                fprintf(stderr,
+                        "ds4-agent: --dsv4-expert-threshold must be a positive fraction "
+                        "of the rank-3 expert score (e.g. 0.95)\n");
+                exit(2);
+            }
+            c.engine.dsv4_expert_threshold = v;
         } else if (!strcmp(arg, "--ssd-streaming-cold")) {
             c.engine.ssd_streaming_cold = true;
         } else if (!strcmp(arg, "--ssd-streaming-cache-experts")) {

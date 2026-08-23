@@ -143,6 +143,20 @@ typedef struct {
     uint64_t ssd_streaming_cache_bytes;
     uint32_t ssd_streaming_full_layers;
     uint32_t ssd_streaming_preload_experts;
+    /* qwen35moe: override the routed top-N experts per token (0 = model
+     * default, normally 8). */
+    uint32_t q35_experts;
+    /* qwen35moe: dynamic expert count as a fraction of the rank-N/2 expert
+     * probability (0 = disabled).  An expert is used only while its router
+     * probability >= fraction * p(rank N/2), capped at q35_experts and
+     * floored at a quarter of it. */
+    float q35_expert_threshold;
+    /* deepseek4 flash: same dynamic expert cut for streaming decode, as a
+     * fraction of the rank-N/2 router score (0 = disabled). */
+    float dsv4_expert_threshold;
+    /* deepseek4 flash: max routed experts per token during decode (1-6,
+     * 0 = model default 6). */
+    uint32_t dsv4_experts;
     uint64_t simulate_used_memory_bytes;
     bool warm_weights;
     bool quality;
@@ -249,6 +263,7 @@ bool ds4_engine_glm_layer_payload_bytes(ds4_engine *e,
  * Pro and later shapes must use nonzero ids. */
 int ds4_engine_model_id(ds4_engine *e);
 bool ds4_engine_is_glm_dsa(ds4_engine *e);
+bool ds4_engine_is_qwen35moe(ds4_engine *e);
 const char *ds4_backend_name(ds4_backend backend);
 bool ds4_think_mode_enabled(ds4_think_mode mode);
 const char *ds4_think_mode_name(ds4_think_mode mode);
@@ -287,6 +302,7 @@ void ds4_engine_dump_tokens(ds4_engine *e, const ds4_tokens *tokens);
 int ds4_dump_text_tokenization(const char *model_path, const char *text, FILE *fp);
 int ds4_engine_head_test(ds4_engine *e, const ds4_tokens *prompt);
 bool ds4_engine_is_glm_dsa(ds4_engine *e);
+bool ds4_engine_is_qwen35moe(ds4_engine *e);
 int ds4_engine_first_token_test(ds4_engine *e, const ds4_tokens *prompt);
 int ds4_engine_metal_graph_test(ds4_engine *e, const ds4_tokens *prompt);
 int ds4_engine_metal_graph_full_test(ds4_engine *e, const ds4_tokens *prompt);
@@ -365,6 +381,15 @@ ds4_session_rewrite_result ds4_session_rewrite_from_common(
 int ds4_session_common_prefix(ds4_session *s, const ds4_tokens *prompt);
 int ds4_session_argmax(ds4_session *s);
 int ds4_session_argmax_excluding(ds4_session *s, int excluded_id);
+
+/* DSpark speculative-decoding counters, maintained unconditionally so live
+ * progress reporting (ds4-server decode logs) can show per-chunk gains. */
+typedef struct ds4_dspark_progress {
+    uint64_t cycles;                 /* speculative verify cycles */
+    uint64_t proposed_tokens;        /* draft tokens offered to the verifier */
+    uint64_t accepted_draft_tokens;  /* draft tokens accepted (free tokens) */
+} ds4_dspark_progress;
+void ds4_session_dspark_progress(const ds4_session *s, ds4_dspark_progress *out);
 int ds4_sample_logits(const float *logits, int n_vocab, float temperature,
                       int top_k, float top_p, float min_p, uint64_t *rng);
 int ds4_session_sample(ds4_session *s, float temperature, int top_k, float top_p, float min_p, uint64_t *rng);

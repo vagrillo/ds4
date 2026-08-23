@@ -1212,6 +1212,10 @@ typedef struct {
     uint64_t ssd_streaming_cache_bytes;
     uint32_t ssd_streaming_full_layers;
     uint32_t ssd_streaming_preload_experts;
+    uint32_t q35_experts;
+    float q35_expert_threshold;
+    float dsv4_expert_threshold;
+    uint32_t dsv4_experts;
     uint64_t simulate_used_memory_bytes;
     int soft_limit_reply_budget;
     int hard_limit_reply_budget;
@@ -1601,6 +1605,42 @@ static eval_config parse_options(int argc, char **argv) {
             c.quality = true;
         } else if (!strcmp(arg, "--ssd-streaming")) {
             c.ssd_streaming = true;
+        } else if (!strcmp(arg, "--q35-experts")) {
+            int v = parse_nonnegative_int_arg(need_arg(&i, argc, argv, arg), arg);
+            if (v <= 0) {
+                fprintf(stderr,
+                        "ds4-eval: --q35-experts must be a positive expert count\n");
+                exit(2);
+            }
+            c.q35_experts = (uint32_t)v;
+        } else if (!strcmp(arg, "--dsv4-experts")) {
+            int v = parse_nonnegative_int_arg(need_arg(&i, argc, argv, arg), arg);
+            if (v <= 0) {
+                fprintf(stderr,
+                        "ds4-eval: --dsv4-experts must be a positive expert count (1-6)\n");
+                exit(2);
+            }
+            c.dsv4_experts = (uint32_t)v;
+        } else if (!strcmp(arg, "--q35-expert-threshold")) {
+            float v = parse_float_arg(need_arg(&i, argc, argv, arg), arg,
+                                      0.0f, 10.0f);
+            if (v <= 0.0f) {
+                fprintf(stderr,
+                        "ds4-eval: --q35-expert-threshold must be a positive fraction "
+                        "of the rank-N/2 expert probability (e.g. 0.95)\n");
+                exit(2);
+            }
+            c.q35_expert_threshold = v;
+        } else if (!strcmp(arg, "--dsv4-expert-threshold")) {
+            float v = parse_float_arg(need_arg(&i, argc, argv, arg), arg,
+                                      0.0f, 10.0f);
+            if (v <= 0.0f) {
+                fprintf(stderr,
+                        "ds4-eval: --dsv4-expert-threshold must be a positive fraction "
+                        "of the rank-3 expert score (e.g. 0.95)\n");
+                exit(2);
+            }
+            c.dsv4_expert_threshold = v;
         } else if (!strcmp(arg, "--ssd-streaming-cold")) {
             c.ssd_streaming_cold = true;
         } else if (!strcmp(arg, "--ssd-streaming-cache-experts")) {
@@ -4165,6 +4205,10 @@ int main(int argc, char **argv) {
         .ssd_streaming_cache_bytes = cfg.ssd_streaming_cache_bytes,
         .ssd_streaming_full_layers = cfg.ssd_streaming_full_layers,
         .ssd_streaming_preload_experts = cfg.ssd_streaming_preload_experts,
+        .q35_experts = cfg.q35_experts,
+        .q35_expert_threshold = cfg.q35_expert_threshold,
+        .dsv4_expert_threshold = cfg.dsv4_expert_threshold,
+        .dsv4_experts = cfg.dsv4_experts,
         .simulate_used_memory_bytes = cfg.simulate_used_memory_bytes,
         .warm_weights = cfg.warm_weights,
         .quality = cfg.quality,

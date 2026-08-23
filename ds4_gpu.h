@@ -159,6 +159,10 @@ int ds4_gpu_preload_q4_expert_tables(const void *model_map, uint64_t model_size,
                                      uint32_t n_total_expert);
 int ds4_gpu_should_use_managed_kv_cache(uint64_t kv_cache_bytes, uint64_t context_bytes);
 void ds4_gpu_set_quality(bool quality);
+void ds4_gpu_set_dsv4_expert_threshold(float threshold);
+float ds4_gpu_get_dsv4_expert_threshold(void);
+void ds4_gpu_set_dsv4_expert_max(uint32_t max_experts);
+uint32_t ds4_gpu_get_dsv4_expert_max(void);
 void ds4_gpu_set_glm_model(bool enabled);
 void ds4_gpu_set_ssd_streaming(bool enabled);
 void ds4_gpu_set_glm_streaming_prefill_full_layer(bool enabled);
@@ -2279,7 +2283,8 @@ int ds4_gpu_router_select_tensor(
         uint32_t                n_group_used,
         bool                    has_bias,
         bool                    hash_mode,
-        const ds4_gpu_tensor *logits);
+        const ds4_gpu_tensor *logits,
+        ds4_gpu_tensor       *n_sel);
 
 int ds4_gpu_router_select_batch_tensor(
         ds4_gpu_tensor       *selected,
@@ -2550,7 +2555,8 @@ int ds4_gpu_routed_moe_one_tensor(
         const ds4_gpu_tensor *x,
         const ds4_gpu_tensor *add_in,
         uint32_t                layer_index,
-        bool                    force_resident);
+        bool                    force_resident,
+        const ds4_gpu_tensor *n_sel);
 
 int ds4_gpu_routed_moe_batch_tensor(
         ds4_gpu_tensor       *out,
@@ -2861,6 +2867,166 @@ int  ds4_gpu_decode_graph_begin(const ds4_decode_graph_key *key);
 int  ds4_gpu_decode_graph_end(const ds4_decode_graph_key *key);
 void ds4_gpu_decode_graph_abort(const ds4_decode_graph_key *key);
 void ds4_gpu_decode_graphs_invalidate(void);
+
+/* =========================================================================
+ * Qwen3.5/3.6 MoE (qwen35moe) primitives.
+ * =========================================================================
+ *
+ * Single-token forward primitives for the hybrid GDN/GQA qwen35moe family.
+ * Weight ranges are read through mapped model views exactly like the Q8_0
+ * mat-vec helpers above; activations live in ds4_gpu_tensor buffers. */
+
+int ds4_gpu_qwen35_matvec_f32_tensor(
+        ds4_gpu_tensor       *out,
+        const void           *model_map,
+        uint64_t              model_size,
+        uint64_t              weight_offset,
+        uint32_t              in_dim,
+        uint32_t              out_dim,
+        const ds4_gpu_tensor *x);
+
+int ds4_gpu_qwen35_matvec_q6_k_tensor(
+        ds4_gpu_tensor       *out,
+        const void           *model_map,
+        uint64_t              model_size,
+        uint64_t              weight_offset,
+        uint32_t              in_dim,
+        uint32_t              out_dim,
+        const ds4_gpu_tensor *x);
+
+int ds4_gpu_qwen35_conv1d_silu_tensor(
+        const void           *model_map,
+        uint64_t              model_size,
+        uint64_t              weight_offset,
+        const ds4_gpu_tensor *in,
+        ds4_gpu_tensor       *state,
+        ds4_gpu_tensor       *out,
+        uint32_t              channels,
+        uint32_t              kernel,
+        uint32_t              n_tokens,
+        uint32_t              write_out);
+
+int ds4_gpu_qwen35_gdn_step_tensor(
+        const ds4_gpu_tensor *qkv_silu,
+        const ds4_gpu_tensor *z,
+        const ds4_gpu_tensor *alpha_raw,
+        const ds4_gpu_tensor *beta_raw,
+        const void           *model_map,
+        uint64_t              model_size,
+        uint64_t              a_bias_offset,
+        uint64_t              dt_bias_offset,
+        uint64_t              ssm_norm_offset,
+        ds4_gpu_tensor       *state,
+        ds4_gpu_tensor       *out,
+        uint32_t              n_tokens,
+        uint32_t              head_dim,
+        uint32_t              n_v_heads,
+        uint32_t              n_k_heads,
+        float                 eps);
+
+int ds4_gpu_qwen35_norm_rope_tensor(
+        const ds4_gpu_tensor *in,
+        const void           *model_map,
+        uint64_t              model_size,
+        uint64_t              norm_offset,
+        ds4_gpu_tensor       *out_f32,
+        ds4_gpu_tensor       *out_f16,
+        uint64_t              out_f16_byte_offset,
+        uint32_t              n_heads,
+        uint32_t              head_dim,
+        uint32_t              n_rot,
+        uint32_t              in_stride,
+        uint32_t              in_offset,
+        uint32_t              out_f16_flag,
+        uint32_t              pos,
+        float                 freq_base,
+        float                 eps);
+
+int ds4_gpu_qwen35_v_store_f16_tensor(
+        const ds4_gpu_tensor *in,
+        ds4_gpu_tensor       *out,
+        uint64_t              out_byte_offset,
+        uint32_t              count);
+
+int ds4_gpu_qwen35_attn_tensor(
+        const ds4_gpu_tensor *q,
+        const ds4_gpu_tensor *qg,
+        const ds4_gpu_tensor *k_cache,
+        const ds4_gpu_tensor *v_cache,
+        ds4_gpu_tensor       *out,
+        uint32_t              n_rows,
+        uint32_t              head_dim,
+        uint32_t              n_q_heads,
+        uint32_t              n_kv_heads,
+        float                 scale);
+
+int ds4_gpu_qwen35_ffn_enter_tensor(
+        ds4_gpu_tensor       *x,
+        const ds4_gpu_tensor *proj_out,
+        ds4_gpu_tensor       *normed,
+        const void           *model_map,
+        uint64_t              model_size,
+        uint64_t              norm_w_offset,
+        uint64_t              router_w_offset,
+        uint64_t              shexp_w_offset,
+        ds4_gpu_tensor       *sel,
+        ds4_gpu_tensor       *sel_w,
+        ds4_gpu_tensor       *shexp_gate,
+        ds4_gpu_tensor       *n_sel,
+        uint32_t              n_embd,
+        uint32_t              n_expert,
+        uint32_t              n_used,
+        uint32_t              min_used,
+        float                 eps,
+        float                 expert_threshold,
+        uint32_t              layer,
+        uint32_t              acc_enable,
+        ds4_gpu_tensor       *n_sel_acc);
+
+int ds4_gpu_qwen35_moe_gate_up_tensor(
+        ds4_gpu_tensor       *mid,
+        const ds4_gpu_tensor *x,
+        const void           *model_map,
+        uint64_t              model_size,
+        uint64_t              gate_offset,
+        uint64_t              up_offset,
+        uint64_t              shexp_gate_offset,
+        uint64_t              shexp_up_offset,
+        uint64_t              gate_exp_bytes,
+        uint64_t              up_exp_bytes,
+        int                   gate_q6,
+        int                   up_q6,
+        const ds4_gpu_tensor *sel,
+        const ds4_gpu_tensor *n_sel,
+        uint32_t              n_expert,
+        uint32_t              n_used,
+        uint32_t              in_dim,
+        uint32_t              n_ff);
+
+int ds4_gpu_qwen35_moe_down_tensor(
+        ds4_gpu_tensor       *partial,
+        const ds4_gpu_tensor *mid,
+        const void           *model_map,
+        uint64_t              model_size,
+        uint64_t              down_offset,
+        uint64_t              shexp_down_offset,
+        uint64_t              exp_down_bytes,
+        const ds4_gpu_tensor *sel,
+        const ds4_gpu_tensor *n_sel,
+        uint32_t              n_expert,
+        uint32_t              n_used,
+        uint32_t              n_ff,
+        uint32_t              n_embd);
+
+int ds4_gpu_qwen35_moe_combine_tensor(
+        ds4_gpu_tensor       *x,
+        const ds4_gpu_tensor *partial,
+        const ds4_gpu_tensor *sel_w,
+        const ds4_gpu_tensor *shexp_gate,
+        const ds4_gpu_tensor *n_sel,
+        float                 weight_scale,
+        uint32_t              n_used,
+        uint32_t              n_embd);
 
 #ifdef __cplusplus
 }
