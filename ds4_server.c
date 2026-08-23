@@ -11008,7 +11008,11 @@ static bool should_remember_thinking_checkpoint(const request *r,
                                                 const char *finish) {
     if (!r || r->kind != REQ_CHAT || r->has_tools) return false;
     if (r->prompt_preserves_reasoning) return false;
-    if (!ds4_think_mode_enabled(r->think_mode)) return false;
+    /* ChatML is the one syntax whose no-think rendering also diverges from the
+     * replay (the live KV keeps the empty <think>\n\n</think>\n\n block), so
+     * qwen remembers a visible checkpoint in both modes. */
+    if (!ds4_think_mode_enabled(r->think_mode) &&
+        r->model_syntax != SERVER_MODEL_SYNTAX_QWEN_CHATML) return false;
     if (finish && (!strcmp(finish, "error") || !strcmp(finish, "length"))) return false;
     if (thinking && thinking->inside) return false;
     return true;
@@ -11207,10 +11211,39 @@ static char *build_responses_visible_assistant_suffix(const request *r,
  * that caused long post-answer pauses and threw away useful sampled state.
  * Instead, remember the visible bytes as a key for the current sampled frontier.
  * The next request can then continue from live KV while tokenizing only the new
- * visible suffix. */
+ * visible suffix.
+ *
+ * ChatML (qwen35moe) renders past assistant turns with no think block at all,
+ * while the live KV keeps the generation prefix (<think>\n when thinking, the
+ * empty <think>\n\n</think>\n\n block when not) plus the hidden reasoning, and
+ * closes the turn with <|im_end|> instead of the DeepSeek eos. */
 static char *build_toolless_thinking_visible_text(const request *r,
                                                   const char *content) {
     if (!r || !r->prompt_text) return NULL;
+
+    if (r->model_syntax == SERVER_MODEL_SYNTAX_QWEN_CHATML) {
+        size_t pt_len = strlen(r->prompt_text);
+        const char *think_on = "<think>\n";
+        const char *think_off = "<think>\n\n</think>\n\n";
+        size_t off_len = strlen(think_off);
+        size_t on_len = strlen(think_on);
+        size_t strip;
+        if (pt_len >= off_len &&
+            memcmp(r->prompt_text + pt_len - off_len, think_off, off_len) == 0) {
+            strip = off_len;
+        } else if (pt_len >= on_len &&
+                   memcmp(r->prompt_text + pt_len - on_len, think_on, on_len) == 0) {
+            strip = on_len;
+        } else {
+            return NULL;
+        }
+        buf visible = {0};
+        buf_append(&visible, r->prompt_text, pt_len - strip);
+        buf_puts(&visible, content ? content : "");
+        buf_puts(&visible, "<|im_end|>");
+        return buf_take(&visible);
+    }
+
     if (!ds4_think_mode_enabled(r->think_mode)) return NULL;
 
     size_t pt_len = strlen(r->prompt_text);
