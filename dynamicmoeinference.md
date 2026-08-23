@@ -51,6 +51,47 @@ Example: `--dsv4-experts 4 --dsv4-expert-threshold 0.95` uses rank 2 as the
 reference, always keeps at least 1 expert, and drops any expert whose score
 falls below 95% of that reference, up to a maximum of 4.
 
+## Expansion influence decay (qwen35moe)
+
+The router of Qwen3.6-35B-A3B was trained to mix exactly 8 routed experts
+per token. When `--q35-experts N` expands the selection beyond that native
+count, the extra experts enter **with a progressively decaying influence**
+instead of full strength: a linear factor that starts at 99% for rank 9
+(the first extra) and falls to 5% at rank N (the last extra). If exactly one
+extra expert is selected (N = 9), it gets the midpoint, 52%.
+
+The factor multiplies the expert's raw router probability **before** the
+kept weights are renormalized:
+
+```
+w(rank k) = factor(k) * p(rank k) / sum_j(factor(j) * p(j))
+factor(k) = 0.99 + (0.05 - 0.99) * (k - 8) / (N - 9)    for k = 9..N
+```
+
+Applying the decay before the renormalization is what makes it well
+behaved: the routed output keeps its scale, the native top-8 keep (and
+slightly gain) relative weight, and the added experts fade out instead of
+diluting them. Decaying after the renormalization would instead shrink the
+total contribution and change the layer output magnitude.
+
+Factors for `--q35-experts 20`:
+
+| rank | 9  | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 |
+|------|----|----|----|----|----|----|----|----|----|----|----|----|
+| factor | 99% | 90% | 82% | 73% | 65% | 56% | 48% | 39% | 31% | 22% | 14% | 5% |
+
+Notes:
+
+* The decay runs inside the router kernel, in prefill and decode alike
+  (the qwen35moe path is a single per-token pipeline).
+* With `--q35-expert-threshold` active, the cut is decided first, on the
+  raw probabilities; the decay then applies to whatever survived above
+  rank 8. The stats report counts the kept experts as usual.
+* `--q35-no-expert-decay` turns the decay off: every selected expert gets
+  full influence, which is the pre-decay expansion behavior.
+* Without expansion (N <= 8) nothing decays and results are bit-identical
+  to the stock routing.
+
 ## Implementation 1: qwen35moe, all on device
 
 Qwen3.6-35B-A3B runs fully resident on Metal through fused kernels
