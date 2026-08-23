@@ -146,7 +146,7 @@ it pays one extra 4-byte read per layer inside a sync it already needed.
 
 
 
-**14 EXPERTS AVERAGE**
+**Dynamic Expert enhance - 14 EXPERTS AVERAGE**
  --nothink --q35-experts 16  --q35-expert-threshold 95
  
 <img width="604" height="408" alt="image" src="https://github.com/user-attachments/assets/46089da5-2a5f-4dce-8ca5-d446a725c159" />
