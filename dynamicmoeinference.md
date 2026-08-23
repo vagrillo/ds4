@@ -136,7 +136,7 @@ it pays one extra 4-byte read per layer inside a sync it already needed.
 
 ## Pelican riding a Bicycle with Qwen3.6-35B-A3B-UD-6b_XL
 
-   Short test using a 6bit quantized Qwen 35B model.
+   Short test using a **6bit quantized** Qwen 35B model.
 
 
 
