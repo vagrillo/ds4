@@ -79,6 +79,10 @@ next sections.
 
 - [CONTRIBUTING.md](CONTRIBUTING.md): correctness and speed regression testing
   guide for contributors. **Read this before sending a pull request**.
+- [dynamicmoeinference.md](dynamicmoeinference.md): scaling routed-expert
+  selection up and down (`--q35-experts`, `--q35-expert-threshold`,
+  `--dsv4-experts`, `--dsv4-expert-threshold`) and how the two
+  implementations work.
 - [QA_BEFORE_RELEASES.md](QA_BEFORE_RELEASES.md): the complete release test
   matrix, including the remote Metal, CUDA, and ROCm machines.
 - [gguf-tools/README.md](gguf-tools/README.md): offline GGUF generation,
@@ -418,6 +422,9 @@ make strix-halo
 ```
 
 ## Dynamic routed-expert selection
+
+The implementation details and design rationale for everything in this
+section are in [dynamicmoeinference.md](dynamicmoeinference.md).
 
 Routed MoE layers normally activate a fixed number of experts per token:
 top-8 for Qwen3.6-35B-A3B, top-6 for DeepSeek V4 Flash. The switches in this
