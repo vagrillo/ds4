@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>ds4-server q35 dynamic-expert comparison &mdash; evalscope</title>
+<title>ds4-server q35: native routing vs expansion with decay &mdash; evalscope</title>
 <style>
   body { font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; margin: 2rem auto; max-width: 900px; color: #1a1a1a; line-height: 1.5; }
   h1 { font-size: 1.5rem; } h2 { font-size: 1.15rem; margin-top: 2rem; border-bottom: 1px solid #ddd; padding-bottom: .3rem; }
@@ -13,63 +13,55 @@
   .meta { color: #666; font-size: .9rem; }
   code { background: #f2f2f2; padding: .1rem .3rem; border-radius: 3px; font-size: .9em; }
   .warn { background: #fff8e1; border-left: 4px solid #f0a800; padding: .6rem 1rem; margin: 1rem 0; }
+  .note { background: #e8f4fd; border-left: 4px solid #2196c9; padding: .6rem 1rem; margin: 1rem 0; }
 </style>
 </head>
 <body>
 
-<h1>Qwen3.6-35B-A3B on ds4-server: dynamic-expert configuration comparison</h1>
+<h1>Qwen3.6-35B-A3B on ds4-server: native routing vs expansion with decay</h1>
 <p class="meta">evalscope 1.10.0 &middot; local OpenAI API 127.0.0.1:8000 &middot; Q6_K_XL &middot; M4 Pro 48 GB &middot; thinking mode &middot; 0-shot &middot; temperature 0 &middot; 2026-08-24</p>
 
-<h2>Configurations</h2>
+<div class="warn"><b>First run, small samples.</b> 32 MMLU, 30 HumanEval and 16 MMLU-Pro questions per configuration:
+directional results only &mdash; 1&ndash;2 questions separate the two configurations on each suite.
+A larger MMLU-Pro round (14 subjects &times; 15 questions) is scheduled to confirm.</div>
+
+<h2>Configurations compared</h2>
 <table>
 <tr><th>Run</th><th>Server flags</th><th>Routed experts/token</th><th>Decode speed</th></tr>
-<tr><td><b>A</b></td><td><code>--q35-experts 20 --q35-expert-threshold 0.8</code></td><td>~15.5 avg (cap 20, threshold cut)</td><td>18.5 t/s</td></tr>
-<tr><td><b>B</b></td><td><i>(none)</i></td><td>8 (model native)</td><td>22.9 t/s</td></tr>
-<tr><td><b>C</b></td><td><code>--q35-experts 20 --q35-expert-threshold 0.8 --q35-no-expert-decay</code></td><td>~15.5 avg, extras at full influence</td><td>18.5 t/s</td></tr>
+<tr><td><b>with decay</b></td><td><code>--q35-experts 20 --q35-expert-threshold 0.8</code></td><td>~15.5 avg (cap 20, threshold cut)</td><td>18.5 t/s</td></tr>
+<tr><td><b>native</b></td><td><i>(none)</i></td><td>8 (model default)</td><td>22.9 t/s</td></tr>
 </table>
-<p>Run A includes the expansion influence decay (99% &rarr; 50% across ranks 9..20). C isolates the decay's effect; B is the native-routing baseline.</p>
+<p>Every rank above the model's native 8 gets the linear influence decay (99% &rarr; 50%) in the "with decay" run.</p>
 
 <h2>Results</h2>
 <table>
-<tr><th>Benchmark</th><th>A (20 + decay)</th><th>B (default 8)</th><th>C (20, no decay)</th></tr>
-<tr><td>MMLU &middot; 8 subjects &times; 4 (n=32)</td><td class="best">96.9% (31/32)</td><td>93.8% (30/32)</td><td>90.6% (29/32)</td></tr>
-<tr><td>HumanEval pass@1 &middot; first 30 (n=30)</td><td>96.7% (29/30)</td><td>96.7% (29/30)</td><td>96.7% (29/30)</td></tr>
-<tr><td>MMLU-Pro &middot; 8 subjects &times; 2 (n=16)</td><td class="best">81.3% (13/16)</td><td>75.0% (12/16)</td><td>75.0% (12/16)</td></tr>
+<tr><th>Benchmark</th><th>with decay</th><th>native</th></tr>
+<tr><td>MMLU &middot; 8 subjects &times; 4 (n=32)</td><td class="best">96.9% (31/32)</td><td>93.8% (30/32)</td></tr>
+<tr><td>HumanEval pass@1 &middot; first 30 (n=30)</td><td>96.7% (29/30)</td><td>96.7% (29/30)</td></tr>
+<tr><td>MMLU-Pro &middot; 8 subjects &times; 2 (n=16)</td><td class="best">81.3% (13/16)</td><td>75.0% (12/16)</td></tr>
 </table>
 
-<h2>Per-subject detail</h2>
-<h3>MMLU</h3>
-<table>
-<tr><th>Subject</th><th>A</th><th>B</th><th>C</th></tr>
-<tr><td>abstract_algebra</td><td class="best">1.00</td><td>0.75</td><td>0.75</td></tr>
-<tr><td>machine_learning</td><td class="best">1.00</td><td class="best">1.00</td><td>0.75</td></tr>
-<tr><td>conceptual_physics</td><td>0.75</td><td>0.75</td><td>0.75</td></tr>
-<tr><td>formal_logic / philosophy / econometrics / high_school_psychology / nutrition</td><td class="best">1.00</td><td class="best">1.00</td><td class="best">1.00</td></tr>
-</table>
-<h3>MMLU-Pro</h3>
-<table>
-<tr><th>Subject</th><th>A</th><th>B</th><th>C</th></tr>
-<tr><td>psychology</td><td class="best">1.00</td><td>0.50</td><td>0.50</td></tr>
-<tr><td>computer_science / physics / chemistry / economics</td><td class="best">1.00</td><td class="best">1.00</td><td class="best">1.00</td></tr>
-<tr><td>math / law / philosophy</td><td>0.50</td><td>0.50</td><td>0.50</td></tr>
-</table>
-<p>HumanEval: saturated at 29/30 for all three configurations (same single miss).</p>
+<h2>Where the differences come from</h2>
+<ul>
+<li><b>MMLU</b>: with decay solves <code>abstract_algebra</code> 4/4 (native 3/4); everything else identical.</li>
+<li><b>MMLU-Pro</b>: only mover is <code>psychology</code> &mdash; 2/2 with decay, 1/2 native; the hard subjects (math, law, philosophy) are 1/2 for both.</li>
+<li><b>HumanEval</b>: identical 29/30 &mdash; saturated at this sample size.</li>
+</ul>
 
 <h2>Reading</h2>
 <ol>
-<li><b>The decay direction looks right.</b> A (decay on) is never below B or C on any suite and takes 3 extra correct answers over 78 samples. Without decay (C), expansion sits slightly below native (B) on MMLU &mdash; consistent with full-strength experts beyond rank 8 adding noise the router never trained for, while decaying them keeps the benefit without the damage.</li>
-<li><b>No gap is statistically significant.</b> 1&ndash;2 questions per suite at n=32/30/16: the honest summary is &ldquo;no measurable quality cost, weak positive signal for the decay&rdquo;. A formal ranking needs hundreds of samples per suite.</li>
-<li><b>The configuration has a real cost</b>: ~15.5 experts/token decode at 18.5 t/s vs 22.9 t/s native (&minus;19%). Expansion buys at best a marginal quality edge at a fifth of speed; its natural regime is quality-critical single shots, not throughput.</li>
+<li><b>Expansion with decay was never below native routing</b> on any suite (+2 correct answers over 78 samples in this run): a weak, consistent positive signal.</li>
+<li><b>The cost is real</b>: 18.5 t/s vs 22.9 t/s (&minus;19%). A quality-leaning setting for single-shot work, not a throughput setting.</li>
 </ol>
 
-<div class="warn">Small-sample caveat: identical questions across runs and deterministic sampling (temperature 0) make the <i>relative</i> comparison fair, but the sample counts are too small to rank configurations reliably.</div>
+<div class="note">The specific contribution of the decay (expansion <b>with vs without</b> decay, same expert count and speed) is isolated in <code>comparison_decay.md</code>: the decay variant scored higher there as well (MMLU 96.9 vs 90.6, MMLU-Pro 81.3 vs 75.0). Ablation data: <code>runC-experts20-thr08-nodecay/</code>.</div>
 
 <h2>Wall-clock per phase (single-slot server)</h2>
 <table>
-<tr><th>Phase</th><th>A</th><th>B</th><th>C</th></tr>
-<tr><td>MMLU (32 q)</td><td>57 min</td><td>56 min</td><td>56 min</td></tr>
-<tr><td>HumanEval (30 q)</td><td>59 min</td><td>53 min</td><td>58 min</td></tr>
-<tr><td>MMLU-Pro (16 q)</td><td>36 min</td><td>35 min</td><td>37 min</td></tr>
+<tr><th>Phase</th><th>with decay</th><th>native</th></tr>
+<tr><td>MMLU (32 q)</td><td>57 min</td><td>56 min</td></tr>
+<tr><td>HumanEval (30 q)</td><td>59 min</td><td>53 min</td></tr>
+<tr><td>MMLU-Pro (16 q)</td><td>36 min</td><td>35 min</td></tr>
 </table>
 
 <h2>Artifacts</h2>
@@ -77,8 +69,8 @@
 <li>Per-sample predictions: <code>run*/predictions/&lt;model-id&gt;/*.jsonl</code></li>
 <li>Per-run reports (JSON + HTML): <code>run*/reports/</code></li>
 <li>Server logs per phase: <code>run*/server*-phase.log</code></li>
-<li>Chain scripts: <code>bench.sh</code> (MMLU), <code>bench_humaneval.sh</code>, <code>bench_mmlupro.sh</code></li>
-<li>HumanEval dataset: <code>openai/openai_humaneval</code> (the adapter default <code>opencompass/humaneval</code> is gone from the Hub)</li>
+<li>Chain scripts: <code>bench.sh</code>, <code>bench_humaneval.sh</code>, <code>bench_mmlupro.sh</code></li>
+<li>HumanEval dataset: <code>openai/openai_humaneval</code> (adapter default <code>opencompass/humaneval</code> is gone from the Hub)</li>
 </ul>
 
 </body>

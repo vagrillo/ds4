@@ -185,28 +185,28 @@ it pays one extra 4-byte read per layer inside a sync it already needed.
 
 ## Measured comparison (evalscope, 2026-08-24)
 
-Three server configurations evaluated with evalscope 1.10.0 against the
+First run, small samples (32 MMLU, 30 HumanEval, 16 MMLU-Pro questions per
+configuration — directional results only). Evalscope 1.10.0 against the
 local ds4-server OpenAI API (Q6_K_XL, M4 Pro, thinking mode on, 0-shot,
-temperature 0, identical questions across runs; full data in
-`evalscope/`):
+temperature 0, identical questions across runs; full data in `evalscope/`):
 
-| | `--q35-experts 20` + thr 0.8 (decay) | native (8) | 20 + thr 0.8, `--q35-no-expert-decay` |
-|---|---|---|---|
-| MMLU, 8 subjects x 4 (n=32) | **96.9%** | 93.8% | 90.6% |
-| HumanEval pass@1, 30 problems | 96.7% | 96.7% | 96.7% |
-| MMLU-Pro, 8 subjects x 2 (n=16) | **81.3%** | 75.0% | 75.0% |
-| Decode speed | 18.5 t/s | 22.9 t/s | 18.5 t/s |
-| Routed experts/token | ~15.5 (cap 20, threshold cut) | 8 | ~15.5 |
+| | `--q35-experts 20` + thr 0.8 (decay) | native (8) |
+|---|---|---|
+| MMLU, 8 subjects x 4 (n=32) | **96.9%** | 93.8% |
+| HumanEval pass@1, 30 problems | 96.7% | 96.7% |
+| MMLU-Pro, 8 subjects x 2 (n=16) | **81.3%** | 75.0% |
+| Decode speed | 18.5 t/s | 22.9 t/s |
+| Routed experts/token | ~15.5 (cap 20, threshold cut) | 8 |
 
-Reading (with the small-sample caveat: 1-2 questions per suite separate
-the configurations, so nothing here is statistically significant):
+Reading:
 
-* Expansion **with the influence decay** was never below the other two on
-  any suite (+3 correct answers over 78 samples) — a weak positive signal
-  that decaying the extra ranks is the right default.
-* Expansion **without decay** landed slightly below native routing on
-  MMLU, consistent with full-strength experts beyond rank 8 injecting
-  noise the router never trained for.
+* Expansion **with the influence decay** was never below native routing on
+  any suite (+2 correct answers over 78 samples in this run) — a weak
+  positive signal that a larger MMLU-Pro round is scheduled to confirm.
+* In the decay ablation (expansion with vs without decay at identical
+  expert count and speed, documented in `evalscope/comparison_decay.md`),
+  the decay variant also came out ahead: MMLU 96.9 vs 90.6, MMLU-Pro
+  81.3 vs 75.0, nothing worse anywhere.
 * The expansion costs ~19% decode speed (18.5 vs 22.9 t/s with ~15.5 vs 8
   experts/token). It is a quality-leaning setting for single-shot work,
   not a throughput setting.
