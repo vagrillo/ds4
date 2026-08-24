@@ -183,6 +183,34 @@ it pays one extra 4-byte read per layer inside a sync it already needed.
   so the same threshold value can behave differently across the two
   models.
 
+## Measured comparison (evalscope, 2026-08-24)
+
+Three server configurations evaluated with evalscope 1.10.0 against the
+local ds4-server OpenAI API (Q6_K_XL, M4 Pro, thinking mode on, 0-shot,
+temperature 0, identical questions across runs; full data in
+`evalscope/`):
+
+| | `--q35-experts 20` + thr 0.8 (decay) | native (8) | 20 + thr 0.8, `--q35-no-expert-decay` |
+|---|---|---|---|
+| MMLU, 8 subjects x 4 (n=32) | **96.9%** | 93.8% | 90.6% |
+| HumanEval pass@1, 30 problems | 96.7% | 96.7% | 96.7% |
+| MMLU-Pro, 8 subjects x 2 (n=16) | **81.3%** | 75.0% | 75.0% |
+| Decode speed | 18.5 t/s | 22.9 t/s | 18.5 t/s |
+| Routed experts/token | ~15.5 (cap 20, threshold cut) | 8 | ~15.5 |
+
+Reading (with the small-sample caveat: 1-2 questions per suite separate
+the configurations, so nothing here is statistically significant):
+
+* Expansion **with the influence decay** was never below the other two on
+  any suite (+3 correct answers over 78 samples) — a weak positive signal
+  that decaying the extra ranks is the right default.
+* Expansion **without decay** landed slightly below native routing on
+  MMLU, consistent with full-strength experts beyond rank 8 injecting
+  noise the router never trained for.
+* The expansion costs ~19% decode speed (18.5 vs 22.9 t/s with ~15.5 vs 8
+  experts/token). It is a quality-leaning setting for single-shot work,
+  not a throughput setting.
+
 
 
 ## Pelican riding a Bicycle with Qwen3.6-35B-A3B-UD-6b_XL

@@ -1,0 +1,166 @@
+agent_config: null
+analysis_report: false
+api_key: '**********'
+api_url: http://127.0.0.1:8000/v1/chat/completions
+chat_template: null
+collect_perf: false
+dataset_args:
+  mmlu_pro:
+    aggregation: mean
+    data_statistics: null
+    dataset_id: TIGER-Lab/MMLU-Pro
+    default_subset: default
+    description: '
+
+      ## Overview
+
+
+      MMLU-Pro is an enhanced version of MMLU with increased difficulty and reasoning
+      requirements. It features 10 answer choices instead of 4 and includes more challenging
+      questions requiring deeper reasoning across 14 diverse domains.
+
+
+      ## Task Description
+
+
+      - **Task Type**: Multiple-Choice Question Answering (10 options)
+
+      - **Input**: Question with up to 10 answer choices
+
+      - **Output**: Single correct answer letter (A-J)
+
+      - **Domains**: 14 subjects including science, law, engineering, psychology
+
+
+      ## Key Features
+
+
+      - 10 answer choices per question (vs 4 in original MMLU)
+
+      - More challenging questions requiring reasoning
+
+      - Includes Chain-of-Thought (CoT) explanations
+
+      - 14 diverse subjects covered
+
+      - Reduced impact of random guessing (10% vs 25%)
+
+
+      ## Evaluation Notes
+
+
+      - Default configuration uses **5-shot** examples
+
+      - Answers should follow "ANSWER: [LETTER]" format
+
+      - Uses subject-specific few-shot examples
+
+      - Step-by-step reasoning encouraged
+
+      - Evaluates on test split with validation for few-shot
+
+      '
+    eval_split: test
+    extra_params: {}
+    few_shot_num: 0
+    few_shot_prompt_template: 'The following are multiple choice questions (with answers)
+      about {subject}. Think step by step and then finish your answer with ''ANSWER:
+      [LETTER]'' (without quotes) where [LETTER] is the correct letter choice.
+
+
+      {examples}
+
+      Answer the following multiple choice question. The last line of your response
+      should be of the following format: ''ANSWER: [LETTER]'' (without quotes) where
+      [LETTER] is one of {letters}. Think step by step before answering.
+
+
+      Question:
+
+      {question}
+
+      Options:
+
+      {choices}
+
+      '
+    few_shot_random: false
+    filters: null
+    force_redownload: false
+    max_image_bytes: null
+    metric_list:
+    - acc
+    name: mmlu_pro
+    output_types:
+    - generation
+    paper_url: null
+    pretty_name: MMLU-Pro
+    prompt_template: 'Answer the following multiple choice question. The last line
+      of your response should be of the following format: ''ANSWER: [LETTER]'' (without
+      quotes) where [LETTER] is one of {letters}. Think step by step before answering.
+
+
+      Question:
+
+      {question}
+
+      Options:
+
+      {choices}
+
+      '
+    query_template: null
+    review_timeout: null
+    sample_example: null
+    sandbox_config: {}
+    shuffle: false
+    shuffle_choices: false
+    subset_list:
+    - math
+    system_prompt: null
+    tags:
+    - MCQ
+    - Knowledge
+    train_split: validation
+dataset_dir: /Users/agrilv/.cache/modelscope/hub/datasets
+dataset_hub: huggingface
+datasets:
+- mmlu_pro
+debug: false
+enable_progress_tracker: false
+eval_backend: Native
+eval_batch_size: 1
+eval_config: null
+eval_type: openai_api
+evalscope_version: 1.10.0
+generation_config:
+  batch_size: 1
+  max_tokens: 4096
+  temperature: 0.0
+  timeout: 1200.0
+ignore_errors: false
+judge_model_args: {}
+judge_strategy: auto
+judge_worker_num: 1
+limit: 1
+model: deepseek-v4-flash
+model_args: {}
+model_id: q35-pro-smoke
+model_task: text_generation
+no_timestamp: true
+repeats: 1
+rerun_review: false
+sandbox:
+  default_config: {}
+  enabled: false
+  engine: docker
+  manager_config: {}
+  pool_size: null
+sandbox_manager_config: {}
+sandbox_type: docker
+seed: 42
+stream: null
+timeout: null
+use_cache: null
+use_sandbox: false
+work_dir: ./evalscope/smoke
