@@ -4777,8 +4777,41 @@ static void json_escape(buf *b, const char *s) {
             buf_puts(b, "\\t");
         } else if (c < 0x20) {
             buf_printf(b, "\\u%04x", (unsigned)c);
-        } else {
+        } else if (c < 0x80) {
             buf_putc(b, (char)c);
+        } else {
+            /* GPT-2 byte-level vocabs can emit invalid/split UTF-8; raw
+             * copies would make the whole response body undecodable.  Keep
+             * well-formed sequences (Python decoder rules: no overlongs,
+             * no surrogates, <= U+10FFFF), replace stray bytes with U+FFFD. */
+            size_t need = 0;
+            unsigned lo = 0x80, hi = 0xBF;
+            if (c >= 0xC2 && c <= 0xDF) {
+                need = 2;
+            } else if (c == 0xE0) {
+                need = 3; lo = 0xA0;
+            } else if ((c >= 0xE1 && c <= 0xEC) || c == 0xEE || c == 0xEF) {
+                need = 3;
+            } else if (c == 0xED) {
+                need = 3; hi = 0x9F;
+            } else if (c == 0xF0) {
+                need = 4; lo = 0x90;
+            } else if (c >= 0xF1 && c <= 0xF3) {
+                need = 4;
+            } else if (c == 0xF4) {
+                need = 4; hi = 0x8F;
+            }
+            int ok = need != 0 && (unsigned char)s[1] >= lo &&
+                     (unsigned char)s[1] <= hi;
+            for (size_t k = 2; ok && k < need; k++) {
+                ok = ((unsigned char)s[k] & 0xC0) == 0x80;
+            }
+            if (ok) {
+                for (size_t k = 0; k < need; k++) buf_putc(b, s[k]);
+                s += need - 1;
+            } else {
+                buf_puts(b, "\\ufffd");
+            }
         }
     }
     buf_putc(b, '"');
