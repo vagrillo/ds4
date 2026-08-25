@@ -62,11 +62,9 @@ extra expert is selected (N = 9), it gets the midpoint, 74.5%.
 
 The factor multiplies the expert's raw router probability **before** the
 kept weights are renormalized:
-
-```
 w(rank k) = factor(k) * p(rank k) / sum_j(factor(j) * p(j))
-factor(k) = 0.99 + (0.50 - 0.99) * (k - 8) / (N - 9)    for k = 9..N
-```
+factor(k) = 0.99 + (0.50 - 0.99) * (k - 8) / (N - 9) for k = 9..N
+
 
 Applying the decay before the renormalization is what makes it well
 behaved: the routed output keeps its scale, the native top-8 keep (and
@@ -91,6 +89,49 @@ Notes:
   full influence, which is the pre-decay expansion behavior.
 * Without expansion (N <= 8) nothing decays and results are bit-identical
   to the stock routing.
+
+## Comparison with Existing Dynamic Routing Methods
+
+Dynamic Top‑K routing has recently emerged as a way to reduce inference cost in Mixture‑of‑Experts (MoE) models by adapting the number of activated experts per token. Two notable approaches in the literature are **Top‑P** (Huang et al., 2024) and **Ada‑K** (Yue et al., 2025). This section highlights how DwarfStar’s dynamic routing differs from these methods.
+
+### Top‑P Routing
+
+Top‑P adds experts in order of router probability until the **cumulative probability** exceeds a threshold \( P \). This reduces average expert count but does not provide a hard upper bound (other than the total number of experts) and does not support expanding beyond the model’s native top‑K.
+
+### Ada‑K Routing
+
+Ada‑K trains a **lightweight RL‑based allocator** that decides a per‑token expert budget. It can reduce FLOPs by >25% without accuracy loss, but requires an additional learned component and its associated training overhead.
+
+### DwarfStar’s Threshold‑Based Routing
+
+DwarfStar uses a **deterministic, threshold‑based rule** on the raw router probabilities:
+
+- Let \( N \) be the maximum number of experts to consider (user‑configurable).
+- Let \( P \) be the threshold fraction (user‑configurable).
+- An expert at rank \( k \) is kept only if its score ≥ \( P \times \) score(rank \( \lfloor N/2 \rfloor \)).
+- The top \( \lfloor N/4 \rfloor \) ranks are always kept (at least 1), ensuring a core set of experts for every token.
+- The total number of kept experts never exceeds \( N \).
+
+This rule is **computed on‑the‑fly** from the already‑available router scores—no cumulative sum, no extra network, no training. It adds negligible overhead and is fully deterministic.
+
+#### Key Differences
+
+| Feature | Top‑P | Ada‑K | DwarfStar Threshold |
+|--------|-------|-------|---------------------|
+| **Selection criterion** | Cumulative probability ≥ \( P \) | Learned policy (RL) | Relative score threshold (rank \( N/2 \) reference) |
+| **Training required** | No | Yes (lightweight RL) | No |
+| **Hard upper bound** | No (up to all experts) | Yes (budget from policy) | Yes (user‑set \( N \)) |
+| **Always‑on core experts** | No | No | Yes (top \( N/4 \) or at least 1) |
+| **Supports expansion** | No | No | Yes (qwen35moe, with linear decay) |
+| **Extra inference overhead** | Low (cumulative sum) | Medium (allocator forward) | Negligible (threshold comparison) |
+
+#### Unique Advantage: Expansion Beyond Native Top‑K
+
+DwarfStar’s **qwen35moe** implementation can **increase** the number of activated experts beyond the model’s default (e.g., from 8 to up to 20). Because the router was trained to mix exactly the native top‑K, the added experts receive a **linearly decayed influence** (99% → 50%) before renormalization. This allows a denser approximation of the full MoE output without retraining, and the decay keeps the layer’s output scale stable. Top‑P and Ada‑K do not address expansion; they only reduce the count.
+
+#### Summary
+
+DwarfStar’s routing is **simpler, fully transparent, and zero‑overhead** compared to RL‑based or cumulative‑probability methods. It is particularly suited for production deployments where predictability, deterministic behavior, and the ability to both **down‑scale and up‑scale** expert counts are valuable.
 
 ## Implementation 1: qwen35moe, all on device
 
@@ -246,12 +287,3 @@ Using 20 experts, threeshold   0.8 and decay from 99% to 50%  MMLU resulta are +
 
 
 <img width="667" height="205" alt="image" src="https://github.com/user-attachments/assets/f86147e4-3db1-4f6c-85c7-67907f2d6d9a" />
-
-
-
-
-
-
-
- 
-
