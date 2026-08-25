@@ -33,20 +33,80 @@ kernel void kernel_qwen35_matvec_q6_k(
         device const uchar *w,
         device const float *x,
         device float *out,
-        uint gid [[thread_position_in_grid]]) {
-    if (gid >= args.out_dim) return;
-    device const block_q6_K *row =
-        (device const block_q6_K *)(w + (ulong)gid * ((ulong)(args.in_dim / QK_K)) * sizeof(block_q6_K));
-    const uint nblocks = args.in_dim / QK_K;
-    float acc = 0.0f;
-    for (uint b = 0; b < nblocks; b++) {
-        float sum = 0.0f;
-        for (uint j = 0; j < QK_K; j++) {
-            sum += ds4_glm_q6_K_value(row + b, j) * x[b * QK_K + j];
+        uint3 tgpig [[threadgroup_position_in_grid]],
+        ushort tiisg [[thread_index_in_simdgroup]],
+        ushort sgitg [[simdgroup_index_in_threadgroup]]) {
+    /* Same lane scheme as kernel_qwen35_moe_gate_up: two simdgroups per
+     * threadgroup, two output rows per simdgroup, the 32 lanes of a
+     * simdgroup covering one 256-wide q6_K block (gh/n128/quarter/l8). */
+    const short NSG = 2;
+    const short NR0 = 2;
+    const int first_row = ((int)tgpig.x * NSG + (int)sgitg) * NR0;
+    if (first_row >= (int)args.out_dim) return;
+    const short nr = (first_row + NR0 <= (int)args.out_dim) ? NR0 : 1;
+
+    const short gh = tiisg >> 2;
+    const short n128 = gh >> 2;
+    const short quarter = gh & 3;
+    const short l8 = tiisg & 3;
+    const int ql_off = n128 * 64 + (quarter & 1) * 32 + l8 * 8;
+    const int qh_off = n128 * 32 + l8 * 8;
+    /* nibble order per ggml dequantize_row_q6_K: LO,LO,HI,HI across the
+     * four quarters — NOT (quarter & 1), which swaps quarters 1 and 2. */
+    const int ql_shift = (quarter >> 1) * 4;
+    const int qh_shift = quarter * 2;
+    const int sc_idx = n128 * 8 + quarter * 2 + (l8 >> 1);
+    const int y_off = n128 * 128 + quarter * 32 + l8 * 8;
+
+    const int nb = (int)(args.in_dim / 256u);
+    const uint64_t row_bytes = (uint64_t)nb * 210u;
+    device const uchar *base = w + (uint64_t)first_row * row_bytes;
+    float acc[NR0] = { 0.0f, 0.0f };
+    float yl[8];
+    for (int ib = 0; ib < nb; ++ib) {
+        device const float *yb = x + (uint64_t)ib * 256u + y_off;
+        for (short i = 0; i < 8; ++i) yl[i] = yb[i];
+        for (short row = 0; row < nr; ++row) {
+            device const block_q6_K *bx =
+                (device const block_q6_K *)(base + (uint64_t)row * row_bytes) + ib;
+            const float ds = (float)bx->d * (float)bx->scales[sc_idx];
+            device const uchar *qlp = bx->ql + ql_off;
+            device const uchar *qhp = bx->qh + qh_off;
+            float s = 0.0f;
+            for (short i = 0; i < 8; ++i) {
+                const int q = ((qlp[i] >> ql_shift) & 0xF) |
+                              (((qhp[i] >> qh_shift) & 3) << 4);
+                s += (float)(q - 32) * yl[i];
+            }
+            acc[row] += ds * s;
         }
-        acc += sum;
     }
-    out[gid] = acc;
+
+    for (short row = 0; row < nr; ++row) {
+        const float v = simd_sum(acc[row]);
+        if (tiisg == 0) out[first_row + row] = v;
+    }
+}
+
+struct ds4_metal_args_qwen35_embed_q6 {
+    uint32_t in_dim;
+    uint32_t n_vocab;
+    int32_t token;
+    uint32_t _pad;
+};
+
+/* Q6_K embedding row lookup: one thread per output element. */
+kernel void kernel_qwen35_embed_q6_k(
+        constant ds4_metal_args_qwen35_embed_q6 &args,
+        device const uchar *w,
+        device float *out,
+        uint gid [[thread_position_in_grid]]) {
+    if (gid >= args.in_dim) return;
+    const uint row_bytes = (args.in_dim / QK_K) * (uint32_t)sizeof(block_q6_K);
+    device const block_q6_K *row =
+        (device const block_q6_K *)(w +
+            (ulong)(uint)args.token * (ulong)row_bytes);
+    out[gid] = ds4_glm_q6_K_value(row, gid);
 }
 
 struct ds4_metal_args_qwen35_conv1d {
@@ -633,6 +693,8 @@ struct ds4_metal_args_qwen35_moe_gate_up {
     uint32_t n_used;         /* 8 */
     uint32_t gate_q6;
     uint32_t up_q6;
+    uint32_t shexp_gate_q6;
+    uint32_t shexp_up_q6;
     uint64_t gate_exp_bytes;
     uint64_t up_exp_bytes;
 };
@@ -676,8 +738,8 @@ kernel void kernel_qwen35_moe_gate_up(
         ubase = shexp_up_w;
         goff = 0;
         uoff = 0;
-        gate_q6 = false;
-        up_q6 = false;
+        gate_q6 = args.shexp_gate_q6 != 0u;
+        up_q6 = args.shexp_up_q6 != 0u;
     }
     const uint64_t grow_bytes = gate_q6
         ? (uint64_t)(args.in_dim / 256u) * 210u
@@ -789,14 +851,18 @@ kernel void kernel_qwen35_moe_gate_up(
     }
 }
 
-/* MoE stage 2: down projection for every slot (routed Q8_0 experts selected
+/* MoE stage 2: down projection for every slot (routed experts selected
  * on device plus the shared expert) into per-slot plain dots.  Same row
- * convention as stage 1; lane L covers elements L, L+32, ... of mid so the
- * qs byte reads stay coalesced.  Selection weights are folded later. */
+ * convention as stage 1; the Q8_0 lane covers elements L, L+32, ... of mid
+ * so the qs byte reads stay coalesced, the Q6_K lane uses the same 256-wide
+ * block layout as stage 1.  Selection weights are folded later. */
 struct ds4_metal_args_qwen35_moe_down {
     uint32_t n_ff;         /* 512 */
     uint32_t n_embd;       /* 2048 */
     uint32_t n_used;       /* 8 */
+    uint32_t down_q6;
+    uint32_t shexp_q6;
+    uint32_t _pad;
     uint64_t exp_down_bytes;
 };
 
@@ -820,25 +886,64 @@ kernel void kernel_qwen35_moe_down(
 
     device const uchar *base;
     uint64_t off;
+    bool down_q6;
     if (slot < args.n_used) {
         base = down_w;
         off = (uint64_t)(uint)sel[slot] * args.exp_down_bytes;
+        down_q6 = args.down_q6 != 0u;
     } else {
         base = shexp_down_w;
         off = 0;
+        down_q6 = args.shexp_q6 != 0u;
     }
-    const uint64_t row_bytes = (uint64_t)(args.n_ff / 32u) * 34u;
+    const uint64_t row_bytes = down_q6
+        ? (uint64_t)(args.n_ff / 256u) * 210u
+        : (uint64_t)(args.n_ff / 32u) * 34u;
     device const float *m = mid + (uint64_t)slot * args.n_ff;
-    const int nb8 = (int)(args.n_ff / 32u);
 
     float sp[NR0] = { 0.0f, 0.0f };
-    for (int b = 0; b < nb8; ++b) {
-        const float yv = m[(uint64_t)b * 32u + tiisg];
-        for (short row = 0; row < NR0; ++row) {
-            device const block_q8_0 *bx =
-                (device const block_q8_0 *)(base + off +
-                    (uint64_t)(first_row + row) * row_bytes) + b;
-            sp[row] += (float)bx->qs[tiisg] * (float)bx->d * yv;
+    if (down_q6) {
+        const short gh = tiisg >> 2;
+        const short n128 = gh >> 2;
+        const short quarter = gh & 3;
+        const short l8 = tiisg & 3;
+        const int ql_off = n128 * 64 + (quarter & 1) * 32 + l8 * 8;
+        const int qh_off = n128 * 32 + l8 * 8;
+        const int ql_shift = (quarter & 1) * 4;
+        const int qh_shift = quarter * 2;
+        const int sc_idx = n128 * 8 + quarter * 2 + (l8 >> 1);
+        const int y_off = n128 * 128 + quarter * 32 + l8 * 8;
+        const int nb = (int)(args.n_ff / 256u);
+        float ml[8];
+        for (int ib = 0; ib < nb; ++ib) {
+            device const float *mb = m + (uint64_t)ib * 256u + y_off;
+            for (short i = 0; i < 8; ++i) ml[i] = mb[i];
+            for (short row = 0; row < NR0; ++row) {
+                device const block_q6_K *bx =
+                    (device const block_q6_K *)(base + off +
+                        (uint64_t)(first_row + row) * row_bytes) + ib;
+                const float ds = (float)bx->d * (float)bx->scales[sc_idx];
+                device const uchar *qlp = bx->ql + ql_off;
+                device const uchar *qhp = bx->qh + qh_off;
+                float s = 0.0f;
+                for (short i = 0; i < 8; ++i) {
+                    const int q = ((qlp[i] >> ql_shift) & 0xF) |
+                                  (((qhp[i] >> qh_shift) & 3) << 4);
+                    s += (float)(q - 32) * ml[i];
+                }
+                sp[row] += ds * s;
+            }
+        }
+    } else {
+        const int nb8 = (int)(args.n_ff / 32u);
+        for (int b = 0; b < nb8; ++b) {
+            const float yv = m[(uint64_t)b * 32u + tiisg];
+            for (short row = 0; row < NR0; ++row) {
+                device const block_q8_0 *bx =
+                    (device const block_q8_0 *)(base + off +
+                        (uint64_t)(first_row + row) * row_bytes) + b;
+                sp[row] += (float)bx->qs[tiisg] * (float)bx->d * yv;
+            }
         }
     }
     for (short row = 0; row < NR0 && first_row + row < (int)args.n_embd; ++row) {

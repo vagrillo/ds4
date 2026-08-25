@@ -2894,6 +2894,15 @@ int ds4_gpu_qwen35_matvec_q6_k_tensor(
         uint32_t              out_dim,
         const ds4_gpu_tensor *x);
 
+int ds4_gpu_qwen35_embed_q6_k_tensor(
+        ds4_gpu_tensor       *out,
+        const void           *model_map,
+        uint64_t              model_size,
+        uint64_t              weight_offset,
+        uint32_t              n_vocab,
+        int32_t               token,
+        uint32_t              n_embd);
+
 int ds4_gpu_qwen35_conv1d_silu_tensor(
         const void           *model_map,
         uint64_t              model_size,
@@ -2997,6 +3006,8 @@ int ds4_gpu_qwen35_moe_gate_up_tensor(
         uint64_t              up_exp_bytes,
         int                   gate_q6,
         int                   up_q6,
+        int                   shexp_gate_q6,
+        int                   shexp_up_q6,
         const ds4_gpu_tensor *sel,
         const ds4_gpu_tensor *n_sel,
         uint32_t              n_expert,
@@ -3012,6 +3023,8 @@ int ds4_gpu_qwen35_moe_down_tensor(
         uint64_t              down_offset,
         uint64_t              shexp_down_offset,
         uint64_t              exp_down_bytes,
+        int                   down_q6,
+        int                   shexp_q6,
         const ds4_gpu_tensor *sel,
         const ds4_gpu_tensor *n_sel,
         uint32_t              n_expert,
