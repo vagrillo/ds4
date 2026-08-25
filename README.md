@@ -4,8 +4,9 @@
 
 **DwarfStar** is a small native inference engine optimized first for
 **DeepSeek V4 Flash**. It also supports **GLM 5.2**, **Qwen3.6-35B-A3B
-(qwen35moe)** on Metal (added by vagrillo), and, on very high-memory
-machines, **DeepSeek V4 PRO**. It is self-contained and deliberately narrow,
+(qwen35moe)** and **Ornith-1.5-35B** on Metal (added by vagrillo), and, on
+very high-memory machines, **DeepSeek V4 PRO**. It is self-contained and
+deliberately narrow,
 not a general GGUF runner. Model loading, prompt rendering, tool calls, KV
 state, the HTTP server, and the coding agent are built and tested together.
 The repository also includes tools and data for GGUF, imatrix, quality, and speed.
@@ -203,8 +204,31 @@ complete the FFN. Expert selection stays fully on the GPU, so decode is never
 interrupted by a per-token readback. This took the M4 Pro 48 GB decode from
 1.95 to about 26 tok/s.
 
-The `--q35-experts` and `--q35-expert-threshold` switches below adjust how many
-routed experts are used per token.
+#### Ornith-1.5-35B
+
+`Ornith-1.5-35B-Q6_K.gguf` runs through the same qwen35moe path: it is a
+Qwen3.5-derived finetune with the identical inference architecture (40 real
+layers, 30 gated-delta-net + 10 GQA, 256 routed experts with top-8, a
+sigmoid-gated shared expert, same tokenizer and ChatML template), and
+`ds4-server` serves it with the same Qwen ChatML tool syntax. Two differences
+are handled explicitly:
+
+* The quant is **uniform Q6_K** (norms, routers and SSM state stay F32), so
+  the embedding lookup, every non-expert projection, the MoE expert kernels
+  and the shared expert all take the native Q6_K paths; weights are read
+  straight from the mapped GGUF, nothing is requantized or upcast.
+* The GGUF ships an extra `blk.40` MTP/nextn layer
+  (`qwen35moe.nextn_predict_layers=1`); the loader accepts 40+1 blocks and
+  leaves the MTP tensors unbound.
+
+Non-expert projections run on a simdgroup Q6_K mat-vec with the same lane
+layout as the MoE kernels (ggml nibble order: LO,LO,HI,HI across the four
+quarters of each block). On an M4 Pro 48 GB the uniform Q6_K weights decode
+at about 33 tok/s — the lighter blocks read fewer weight bytes per token than
+the Q6_K/Q8_0 mix of the Qwen3.6-UD quant, which decodes at about 26 tok/s.
+
+The `--q35-experts` and `--q35-expert-threshold` switches below apply
+unchanged.
 
 Then build:
 
@@ -433,7 +457,8 @@ The implementation details and design rationale for everything in this
 section are in [dynamicmoeinference.md](dynamicmoeinference.md).
 
 Routed MoE layers normally activate a fixed number of experts per token:
-top-8 for Qwen3.6-35B-A3B, top-6 for DeepSeek V4 Flash. The switches in this
+top-8 for Qwen3.6-35B-A3B and Ornith-1.5-35B, top-6 for DeepSeek V4 Flash.
+The switches in this
 section override that at inference time. Selecting fewer experts speeds up
 decode (in SSD streaming it also skips the SSD fetch and the expert-cache
 residency of the dropped experts); a score threshold adapts the count token
