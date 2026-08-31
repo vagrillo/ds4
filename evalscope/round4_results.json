@@ -7713,6 +7713,61 @@
  {
   "run": "q35-default8-r4",
   "model": "Qwen 3.6 35B A3B (reference implementation)",
+  "question_id": 6043,
+  "subject": "health",
+  "pred": "B",
+  "gold": "B",
+  "result": "correct",
+  "latency_s": 112.13918258389458,
+  "tokens": 1740
+ },
+ {
+  "run": "q35-default8-r4",
+  "model": "Qwen 3.6 35B A3B (reference implementation)",
+  "question_id": 6044,
+  "subject": "health",
+  "pred": "G",
+  "gold": "G",
+  "result": "correct",
+  "latency_s": 139.00382799981162,
+  "tokens": 2160
+ },
+ {
+  "run": "q35-default8-r4",
+  "model": "Qwen 3.6 35B A3B (reference implementation)",
+  "question_id": 6045,
+  "subject": "health",
+  "pred": "D",
+  "gold": "D",
+  "result": "correct",
+  "latency_s": 159.10627279197797,
+  "tokens": 2367
+ },
+ {
+  "run": "q35-default8-r4",
+  "model": "Qwen 3.6 35B A3B (reference implementation)",
+  "question_id": 6046,
+  "subject": "health",
+  "pred": "A",
+  "gold": "A",
+  "result": "correct",
+  "latency_s": 135.81219004211016,
+  "tokens": 1993
+ },
+ {
+  "run": "q35-default8-r4",
+  "model": "Qwen 3.6 35B A3B (reference implementation)",
+  "question_id": 6047,
+  "subject": "health",
+  "pred": "B",
+  "gold": "B",
+  "result": "correct",
+  "latency_s": 123.329686333891,
+  "tokens": 1929
+ },
+ {
+  "run": "q35-default8-r4",
+  "model": "Qwen 3.6 35B A3B (reference implementation)",
   "question_id": 10774,
   "subject": "philosophy",
   "pred": "A",
