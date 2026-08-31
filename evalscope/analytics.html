@@ -40,7 +40,18 @@
   #status{color:var(--tx2);font-size:12.5px;margin-left:auto}
   .card{background:var(--card);border:1px solid var(--card-brd);border-radius:18px;
         backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
-        box-shadow:0 8px 30px rgba(0,0,0,.35);padding:16px;margin:0}
+        box-shadow:0 8px 30px rgba(0,0,0,.35);padding:16px;margin:0;position:relative}
+  .fs-btn{position:absolute;top:10px;right:12px;z-index:5;width:30px;height:30px;
+          border-radius:9px;border:1px solid var(--card-brd);background:rgba(13,19,38,.72);
+          color:var(--tx2);font-size:15px;line-height:1;cursor:pointer;opacity:0;transition:.18s;
+          display:flex;align-items:center;justify-content:center}
+  .card:hover .fs-btn,.card:focus-within .fs-btn{opacity:1}
+  .fs-btn:hover{color:var(--tx);background:rgba(37,99,235,.55)}
+  .card:fullscreen{background:#0d1326;overflow:auto;border-radius:0;
+                   display:flex;flex-direction:column;justify-content:center}
+  .card:fullscreen .canvas-box{height:calc(100vh - 90px);max-height:820px}
+  .card:fullscreen .tablewrap{max-height:calc(100vh - 70px);overflow:auto}
+  .card:fullscreen .fs-btn{opacity:1;position:fixed;top:14px;right:16px}
   .grid{display:grid;gap:14px;margin:14px 0}
   .g-cards{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
   .g-2{grid-template-columns:1fr 1fr}
@@ -85,31 +96,39 @@
 
   <div id="err"></div>
 
+  <div class="toolbar">
+    <input id="nameFilter" type="text" value="*r4" spellcheck="false" placeholder="run-name filter, e.g. *r4" size="14"
+           style="background:#141a30;color:var(--tx);border:1px solid var(--card-brd);border-radius:10px;padding:7px 12px;font-size:13.5px">
+    <span class="sub" id="filterInfo"></span>
+  </div>
   <div class="toolbar" id="chips" aria-label="Run filter"></div>
+
+  <h2>Scoreboard <span class="hint">total score per selected run · ok / total answers, 0.xxx format — best run highlighted</span></h2>
+  <div class="grid g-cards" id="scoreboard"></div>
 
   <h2>Run summary <span class="hint">per selected run · non-truncated answers unless noted</span></h2>
   <div class="grid g-cards" id="kpis"></div>
 
   <h2>Volume &amp; answer quality mix</h2>
   <div class="grid g-2">
-    <div class="card"><div class="canvas-box"><canvas id="cMix"></canvas></div></div>
-    <div class="card"><div class="canvas-box"><canvas id="cTrunc"></canvas></div></div>
+    <div class="card"><button class="fs-btn" title="Fullscreen">⤢</button><div class="canvas-box"><canvas id="cMix"></canvas></div></div>
+    <div class="card"><button class="fs-btn" title="Fullscreen">⤢</button><div class="canvas-box"><canvas id="cTrunc"></canvas></div></div>
   </div>
 
   <h2>Verbosity <span class="hint">output tokens per answer</span></h2>
   <div class="grid g-2">
-    <div class="card"><div class="canvas-box"><canvas id="cTok"></canvas></div></div>
-    <div class="card"><div class="canvas-box"><canvas id="cTokHist"></canvas></div></div>
+    <div class="card"><button class="fs-btn" title="Fullscreen">⤢</button><div class="canvas-box"><canvas id="cTok"></canvas></div></div>
+    <div class="card"><button class="fs-btn" title="Fullscreen">⤢</button><div class="canvas-box"><canvas id="cTokHist"></canvas></div></div>
   </div>
 
-  <h2>Latency &amp; throughput</h2>
+  <h2>Latency <span class="hint">seconds per answer</span></h2>
   <div class="grid g-2">
-    <div class="card"><div class="canvas-box"><canvas id="cLat"></canvas></div></div>
-    <div class="card"><div class="canvas-box"><canvas id="cTps"></canvas></div></div>
+    <div class="card"><button class="fs-btn" title="Fullscreen">⤢</button><div class="canvas-box"><canvas id="cLat"></canvas></div></div>
+    <div class="card"><button class="fs-btn" title="Fullscreen">⤢</button><div class="canvas-box"><canvas id="cLatHist"></canvas></div></div>
   </div>
 
   <h2>Per-subject breakdown <span class="hint">selected runs · mean tokens and answer count</span></h2>
-  <div class="card"><div class="canvas-box tall"><canvas id="cSubj"></canvas></div></div>
+  <div class="card"><button class="fs-btn" title="Fullscreen">⤢</button><div class="canvas-box tall"><canvas id="cSubj"></canvas></div></div>
 
   <h2>Head-to-head <span class="hint">paired by subject + question id, only questions answered by both runs</span></h2>
   <div class="toolbar">
@@ -120,18 +139,17 @@
   </div>
   <div class="grid g-cards" id="h2hKpis"></div>
   <div class="grid g-2">
-    <div class="card"><div class="canvas-box tall"><canvas id="cScatter"></canvas></div></div>
-    <div class="card"><div class="canvas-box"><canvas id="cDelta"></canvas></div></div>
+    <div class="card"><button class="fs-btn" title="Fullscreen">⤢</button><div class="canvas-box tall"><canvas id="cScatter"></canvas></div></div>
+    <div class="card"><button class="fs-btn" title="Fullscreen">⤢</button><div class="canvas-box"><canvas id="cDelta"></canvas></div></div>
   </div>
   <div class="grid">
-    <div class="card"><div class="canvas-box"><canvas id="cEff"></canvas></div></div>
-    <div class="card"><div class="canvas-box" style="height:220px"><canvas id="cLatTok"></canvas></div></div>
+    <div class="card"><button class="fs-btn" title="Fullscreen">⤢</button><div class="canvas-box"><canvas id="cAgree"></canvas></div></div>
   </div>
 
   <h2>Tables</h2>
   <div class="grid">
-    <div class="card"><div class="tablewrap" id="tRuns"></div></div>
-    <div class="card"><div class="tablewrap" id="tSubj"></div></div>
+    <div class="card"><button class="fs-btn" title="Fullscreen">⤢</button><div class="tablewrap" id="tRuns"></div></div>
+    <div class="card"><button class="fs-btn" title="Fullscreen">⤢</button><div class="tablewrap" id="tSubj"></div></div>
   </div>
 
   <div class="note">Note: with this dataset alone, “quality” is shown as the ok / trunc / ko mix (trunc = 8K reasoning
@@ -146,7 +164,7 @@
 const DATA_URL = "https://raw.githubusercontent.com/vagrillo/ds4/refs/heads/qwen35moe-support/evalscope/round4_results.json";
 const PALETTE = ["#60a5fa","#f472b6","#34d399","#fbbf24","#a78bfa","#22d3ee","#fb923c","#e879f9"];
 const charts = {};
-let RAW = [], RUNS = [], active = new Set(), selA = null, selB = null;
+let RAW = [], RUNS = [], RUNS_VIEW = [], active = new Set(), selA = null, selB = null;
 
 /* ---------- utils ---------- */
 const $ = id => document.getElementById(id);
@@ -166,19 +184,30 @@ function statsFor(run){
   const ok = rs.filter(r=>r.result==="ok"), tr = rs.filter(r=>r.result==="trunc"), ko = rs.filter(r=>r.result==="ko");
   const tok = ok.filter(r=>r.tokens>0).map(r=>r.tokens);
   const lat = ok.filter(r=>r.latency_s>0).map(r=>r.latency_s);
-  const ST = ok.filter(r=>r.tokens>0&&r.latency_s>0);
-  const sumT = ST.reduce((s,r)=>s+r.tokens,0), sumL = ST.reduce((s,r)=>s+r.latency_s,0);
   return { run, n:rs.length, nOk:ok.length, nTr:tr.length, nKo:ko.length,
     tok, lat, meanTok:mean(tok), medTok:median(tok), p90Tok:pctl(tok,90),
     meanLat:mean(lat), medLat:median(lat), p90Lat:pctl(lat,90),
-    tps: sumL>0 ? sumT/sumL : NaN,
-    totTok: sumT, totLat: sumL };
+    acc: rs.length ? ok.length/rs.length : NaN };
 }
+
+/* fullscreen toggles on every card */
+function initFullscreen(){
+  document.querySelectorAll(".card").forEach(c=>{
+    const b=c.querySelector(".fs-btn"); if(!b||b.dataset.bound) return;
+    b.dataset.bound="1";
+    b.onclick=()=>{ if(document.fullscreenElement){ document.exitFullscreen(); }
+                    else if(c.requestFullscreen){ c.requestFullscreen().catch(()=>{}); } };
+  });
+}
+document.addEventListener("fullscreenchange",()=>{
+  document.querySelectorAll(".fs-btn").forEach(b=>b.textContent=document.fullscreenElement?"✕":"⤢");
+});
 
 /* ---------- rendering ---------- */
 function colorOf(run){ return PALETTE[RUNS.indexOf(run) % PALETTE.length]; }
 function labelOf(run){ const m = RAW.find(r=>r.run===run); return m ? (m.model||run) : run; }
 function shortLabel(run){ return labelOf(run).length>34 ? labelOf(run).slice(0,33)+"…" : labelOf(run); }
+function shortName(run){ return run.length>26 ? run.slice(0,25)+"…" : run; }
 function mk(id,cfg){ if(charts[id]) charts[id].destroy();
   Chart.defaults.color="#9aa5c0"; Chart.defaults.borderColor="rgba(255,255,255,.08)";
   Chart.defaults.font.family="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif";
@@ -199,6 +228,42 @@ function renderChips(){
   const st=document.createElement("span"); st.id="status"; c.appendChild(st);
 }
 
+/* wildcard run-name filter, default *r4 */
+function globToRe(g){
+  const esc=g.replace(/[.+^${}()|[\]\\]/g,"\\$&").replace(/\*/g,".*").replace(/\?/g,".");
+  return new RegExp("^"+esc+"$","i");
+}
+function applyFilter(){
+  const pat=$("nameFilter").value.trim()||"*";
+  let re; try{ re=globToRe(pat); }catch(e){ return; }
+  const matching=RUNS.filter(r=>re.test(r));
+  RUNS_VIEW=matching.length?matching:RUNS;
+  $("filterInfo").textContent=`${RUNS_VIEW.length}/${RUNS.length} runs match "${pat}"`+
+    (matching.length?"":" (no match — showing all)");
+  if(selA&&!RUNS_VIEW.includes(selA)) selA=RUNS_VIEW[0]||null;
+  if(selB&&!RUNS_VIEW.includes(selB)) selB=RUNS_VIEW[RUNS_VIEW.length-1]||null;
+  active=new Set([...active].filter(r=>RUNS_VIEW.includes(r)));
+  if(!active.size) active=new Set(RUNS_VIEW);
+}
+
+function renderScoreboard(){
+  const el=$("scoreboard"); el.innerHTML = active.size===0 ? "" : "";
+  const sorted=[...active].map(r=>({r,s:statsFor(r)}))
+    .sort((a,b)=>(b.s.n?b.s.nOk/b.s.n:0)-(a.s.n?a.s.nOk/a.s.n:0));
+  const best=sorted.length?sorted[0].s.nOk/sorted[0].s.n:NaN;
+  for(const {r,s} of sorted){
+    const score=s.n?s.nOk/s.n:NaN, col=colorOf(r);
+    const d=document.createElement("div"); d.className="card kpi";
+    d.innerHTML=`<div class="l"><span class="dot" style="background:${col}"></span>${shortName(r)}</div>
+      <div class="v" style="font-size:40px;background:linear-gradient(90deg,${col},#e8ecf8);
+        -webkit-background-clip:text;background-clip:text;color:transparent;
+        ${s.nOk/s.n===best?"text-shadow:0 0 24px "+col+"88;":""}">${s.n?score.toFixed(3):"–"}</div>
+      <div class="m">${s.nOk} ok / ${s.n} answers</div>
+      <div class="m">trunc ${s.nTr} · ko ${s.nKo}</div>`;
+    el.appendChild(d);
+  }
+}
+
 function renderKpis(){
   $("kpis").innerHTML = active.size===0
     ? `<div class="card note">Select at least one run above.</div>` : "";
@@ -209,9 +274,10 @@ function renderKpis(){
       <div class="l"><span class="dot" style="background:${col}"></span>${shortLabel(run)}</div>
       <div class="v">${s.n}</div><div class="m">answers</div>
       <div class="m">ok ${s.nOk} · trunc ${s.nTr} · ko ${s.nKo}</div>
+      <div class="v" style="margin-top:10px;font-size:19px;color:#34d399">${s.n?fmt(100*s.nOk/s.n)+"%":"–"}</div>
+      <div class="m">answered rate (ok / total)</div>
       <div class="v" style="margin-top:10px;font-size:19px">${fmt0(s.meanTok)}</div><div class="m">mean tokens</div>
-      <div class="v" style="margin-top:10px;font-size:19px">${fmt(s.meanLat)} s</div><div class="m">mean latency</div>
-      <div class="v" style="margin-top:10px;font-size:19px">${fmt(s.tps)}</div><div class="m">tok/s (weighted)</div>`;
+      <div class="v" style="margin-top:10px;font-size:19px">${fmt(s.meanLat)} s</div><div class="m">mean latency</div>`;
     $("kpis").appendChild(div);
   }
 }
@@ -258,10 +324,30 @@ function renderLat(){
      borderColor:runs.map(colorOf),borderWidth:2,borderRadius:6}
   ]},options:{responsive:true,maintainAspectRatio:false,plugins:{title:{display:true,text:"Latency per answer (s): mean / median / p90"}},
     scales:{y:{beginAtZero:true}}}});
-  mk("cTps",{type:"bar",data:{labels:runs.map(shortLabel),datasets:[
-    {label:"tok/s",data:runs.map(r=>statsFor(r).tps),backgroundColor:runs.map(colorOf),borderRadius:6}
-  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{title:{display:true,text:"Throughput (Σ tokens / Σ latency, non-truncated)"}},
-    scales:{y:{beginAtZero:true}}}});
+  const edges=Array.from({length:13},(_,i)=>i*60);
+  mk("cLatHist",{type:"bar",data:{labels:edges.slice(0,-1).map((e,i)=>`${e}s–${edges[i+1]}s`),
+    datasets:runs.map(r=>({label:shortLabel(r),data:hist(statsFor(r).lat,edges),
+      backgroundColor:colorOf(r)+"cc",borderRadius:4}))},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{title:{display:true,text:"Latency distribution (non-truncated answers)"}},
+      scales:{y:{beginAtZero:true}}}});
+}
+
+function renderAgree(){
+  const runs=sel();
+  if(runs.length<2){ mk("cAgree",{type:"bar",data:{labels:[],datasets:[]}}); return; }
+  const labels=[],vals=[],cols=[];
+  for(let i=0;i<runs.length;i++) for(let j=i+1;j<runs.length;j++){
+    const both=pairsOf(runs[i],runs[j]).filter(([x,y])=>x.pred&&y.pred);
+    const ag=both.filter(([x,y])=>x.pred===y.pred).length;
+    labels.push(shortLabel(runs[i]).slice(0,14)+" vs "+shortLabel(runs[j]).slice(0,14));
+    vals.push(both.length?100*ag/both.length:0); cols.push(colorOf(runs[j])+"cc");
+  }
+  mk("cAgree",{type:"bar",data:{labels,datasets:[{label:"identical answer %",data:vals,
+    backgroundColor:cols,borderRadius:6}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{title:{display:true,text:"Cross-run answer agreement (same ANSWER letter, paired questions)"}},
+      scales:{y:{beginAtZero:true,max:100,ticks:{callback:v=>v+"%"}}}}});
 }
 
 function renderSubj(){
@@ -333,36 +419,27 @@ function renderH2h(){
       plugins:{title:{display:true,text:"Token delta distribution (B − A), negative = B more concise"}},
       scales:{y:{beginAtZero:true}}}});
 
-  // efficiency frontier: mean tokens vs mean latency (one point per run)
-  mk("cEff",{type:"scatter",data:{datasets:RUNS.filter(r=>active.has(r)||r===selA||r===selB).map(r=>{
-    const s=statsFor(r);return {label:shortLabel(r),data:[{x:s.meanLat,y:s.meanTok}],
-      backgroundColor:colorOf(r),pointRadius:7,pointHoverRadius:9};})},
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{title:{display:true,text:"Efficiency map: mean latency vs mean tokens (lower-left is better)",
-        bodyFont:{size:11}},tooltip:{callbacks:{label:c=>c.dataset.label}}},
-      scales:{x:{title:{display:true,text:"mean latency (s)"},beginAtZero:true},
-              y:{title:{display:true,text:"mean tokens"},beginAtZero:true}}}});
-
-  // latency vs tokens implied speed: tok/s bar
-  const rr=RUNS.filter(r=>active.has(r)||r===selA||r===selB);
-  mk("cLatTok",{type:"bar",data:{labels:rr.map(shortLabel),
-    datasets:[{label:"tok/s",data:rr.map(r=>statsFor(r).tps),
+  // combined rating: answered rate (ok/total), width 0-1 shown as horizontal bars
+  const rr=RUNS_VIEW.filter(r=>active.has(r)||r===selA||r===selB);
+  mk("cEff",{type:"bar",data:{labels:rr.map(shortLabel),
+    datasets:[{label:"ok / total answers",data:rr.map(r=>100*statsFor(r).nOk/statsFor(r).n),
       backgroundColor:rr.map(colorOf),borderRadius:6}]},
     options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,
-      plugins:{title:{display:true,text:"Implied decode speed (tok/s)"}},
-      scales:{x:{beginAtZero:true}}}});
+      plugins:{title:{display:true,text:"Combined rating: answered rate per run (ok / total, %)"}},
+      scales:{x:{beginAtZero:true,max:100,ticks:{callback:v=>v+"%"}}}}});
 }
 
 /* ---------- tables ---------- */
 function renderTables(){
-  const runs=RUNS;
+  const runs=RUNS_VIEW;
   let h=`<table><thead><tr><th>run</th><th>answers</th><th>ok</th><th>trunc</th><th>ko</th>
-    <th>trunc %</th><th>mean tok</th><th>median</th><th>p90</th><th>mean lat (s)</th><th>tok/s</th></tr></thead><tbody>`;
+    <th>ok %</th><th>trunc %</th><th>mean tok</th><th>median</th><th>p90</th><th>mean lat (s)</th></tr></thead><tbody>`;
   for(const r of runs){ const s=statsFor(r);
     h+=`<tr><td><span class="dot" style="background:${colorOf(r)}"></span>${shortLabel(r)} <span class="sub">(${r})</span></td>
       <td>${s.n}</td><td>${s.nOk}</td><td>${s.nTr}</td><td>${s.nKo}</td>
+      <td class="pos">${s.n?fmt(100*s.nOk/s.n):"–"}</td>
       <td>${s.n?fmt(100*s.nTr/s.n):"–"}</td><td>${fmt0(s.meanTok)}</td><td>${fmt0(s.medTok)}</td>
-      <td>${fmt0(s.p90Tok)}</td><td>${fmt(s.meanLat)}</td><td>${fmt(s.tps)}</td></tr>`; }
+      <td>${fmt0(s.p90Tok)}</td><td>${fmt(s.meanLat)}</td></tr>`; }
   $("tRuns").innerHTML=h+"</tbody></table>";
 
   const subjects=[...new Set(RAW.map(r=>r.subject))].sort();
@@ -378,10 +455,10 @@ function renderTables(){
 }
 
 function renderAll(){
-  renderKpis(); renderMix(); renderVerb(); renderLat(); renderSubj(); renderH2h();
-  renderTables();
+  renderScoreboard(); renderKpis(); renderMix(); renderVerb(); renderLat(); renderSubj(); renderH2h();
+  renderAgree(); renderTables(); initFullscreen();
   const st=$("status");
-  if(st) st.textContent=`${RAW.length} records · ${RUNS.length} runs · fetched ${new Date().toLocaleTimeString("en-GB")}`;
+  if(st) st.textContent=`${RAW.length} records · ${RUNS_VIEW.length}/${RUNS.length} runs shown · fetched ${new Date().toLocaleTimeString("en-GB")}`;
 }
 
 /* ---------- load ---------- */
@@ -393,15 +470,16 @@ async function load(){
     RAW=await res.json();
     if(!Array.isArray(RAW)||!RAW.length) throw new Error("empty or unexpected JSON");
     RUNS=[...new Set(RAW.map(r=>r.run))];
-    if(!active.size){ active=new Set(RUNS); }
-    if(!selA||!RUNS.includes(selA)) selA=RUNS.includes("q35-default8-r4")?"q35-default8-r4":RUNS[0];
-    if(!selB||!RUNS.includes(selB)) selB=RUNS.includes("q35-exp20-thr08-gate27-39-r4")?"q35-exp20-thr08-gate27-39-r4":RUNS[RUNS.length-1];
+    applyFilter();
+    if(!selA||!RUNS_VIEW.includes(selA)) selA=RUNS_VIEW.includes("q35-default8-r4")?"q35-default8-r4":RUNS_VIEW[0];
+    if(!selB||!RUNS_VIEW.includes(selB)) selB=RUNS_VIEW.includes("q35-exp20-thr08-gate27-39-r4")?"q35-exp20-thr08-gate27-39-r4":RUNS_VIEW[RUNS_VIEW.length-1];
     renderChips(); renderH2hSelects(); renderAll();
   }catch(e){
     const el=$("err"); el.style.display="block";
     el.textContent="Failed to load data: "+e.message+" — check the JSON URL and your connection.";
   }
 }
+$("nameFilter").addEventListener("input",()=>{ applyFilter(); renderChips(); renderH2hSelects(); renderAll(); });
 load();
 </script>
 </body>
