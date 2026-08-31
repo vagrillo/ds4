@@ -62,10 +62,12 @@ def main():
                 except Exception:
                     continue
                 pred, trunc, tok, lat = extract(r.get("model_output", ""))
-                # result: correct / wrong / trunc (8K reasoning budget exhausted)
-                if trunc:
-                    res = "trunc"
-                elif pred is not None and pred == gold.get(qid):
+                # result grades by the final ANSWER letter (like evalscope/live_status):
+                # a question that hit the 8K budget but still emitted the letter is graded
+                # normally; "trunc" only when no letter was produced before the cut.
+                if pred is None:
+                    res = "trunc" if trunc else "wrong"
+                elif pred == gold.get(qid):
                     res = "correct"
                 else:
                     res = "wrong"
@@ -80,6 +82,7 @@ def main():
                     "pred": pred,
                     "gold": gold.get(qid),
                     "result": res,
+                    "truncated": bool(trunc),
                     "latency_s": lat,
                     "tokens": tok,
                 })
