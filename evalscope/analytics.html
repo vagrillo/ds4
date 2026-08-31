@@ -103,7 +103,7 @@
   </div>
   <div class="toolbar" id="chips" aria-label="Run filter"></div>
 
-  <h2>Scoreboard <span class="hint">total score per selected run · ok / total answers, 0.xxx format — best run highlighted</span></h2>
+  <h2>Scoreboard <span class="hint">accuracy per selected run · correct / total answers vs MMLU-Pro gold, 0.xxx format — best run highlighted</span></h2>
   <div class="grid g-cards" id="scoreboard"></div>
 
   <h2>Run summary <span class="hint">per selected run · non-truncated answers unless noted</span></h2>
@@ -181,9 +181,10 @@ function hist(vals, edges){ const b=new Array(edges.length-1).fill(0);
 
 function statsFor(run){
   const rs = RAW.filter(r=>r.run===run);
-  const ok = rs.filter(r=>r.result==="ok"), tr = rs.filter(r=>r.result==="trunc"), ko = rs.filter(r=>r.result==="ko");
-  const tok = ok.filter(r=>r.tokens>0).map(r=>r.tokens);
-  const lat = ok.filter(r=>r.latency_s>0).map(r=>r.latency_s);
+  const ok = rs.filter(r=>r.result==="correct"), tr = rs.filter(r=>r.result==="trunc"),
+        ko = rs.filter(r=>r.result==="wrong");
+  const tok = rs.filter(r=>r.result!=="trunc"&&r.tokens>0).map(r=>r.tokens);
+  const lat = rs.filter(r=>r.result!=="trunc"&&r.latency_s>0).map(r=>r.latency_s);
   return { run, n:rs.length, nOk:ok.length, nTr:tr.length, nKo:ko.length,
     tok, lat, meanTok:mean(tok), medTok:median(tok), p90Tok:pctl(tok,90),
     meanLat:mean(lat), medLat:median(lat), p90Lat:pctl(lat,90),
@@ -258,8 +259,8 @@ function renderScoreboard(){
       <div class="v" style="font-size:40px;background:linear-gradient(90deg,${col},#e8ecf8);
         -webkit-background-clip:text;background-clip:text;color:transparent;
         ${s.nOk/s.n===best?"text-shadow:0 0 24px "+col+"88;":""}">${s.n?score.toFixed(3):"–"}</div>
-      <div class="m">${s.nOk} ok / ${s.n} answers</div>
-      <div class="m">trunc ${s.nTr} · ko ${s.nKo}</div>`;
+      <div class="m">${s.nOk} correct / ${s.n} answers</div>
+      <div class="m">wrong ${s.nKo} · trunc ${s.nTr}</div>`;
     el.appendChild(d);
   }
 }
@@ -273,9 +274,9 @@ function renderKpis(){
     div.innerHTML=`
       <div class="l"><span class="dot" style="background:${col}"></span>${shortLabel(run)}</div>
       <div class="v">${s.n}</div><div class="m">answers</div>
-      <div class="m">ok ${s.nOk} · trunc ${s.nTr} · ko ${s.nKo}</div>
+      <div class="m">correct ${s.nOk} · wrong ${s.nKo} · trunc ${s.nTr}</div>
       <div class="v" style="margin-top:10px;font-size:19px;color:#34d399">${s.n?fmt(100*s.nOk/s.n)+"%":"–"}</div>
-      <div class="m">answered rate (ok / total)</div>
+      <div class="m">accuracy vs gold</div>
       <div class="v" style="margin-top:10px;font-size:19px">${fmt0(s.meanTok)}</div><div class="m">mean tokens</div>
       <div class="v" style="margin-top:10px;font-size:19px">${fmt(s.meanLat)} s</div><div class="m">mean latency</div>`;
     $("kpis").appendChild(div);
@@ -287,14 +288,15 @@ function sel(){ return [...active]; }
 function renderMix(){
   const runs=sel();
   mk("cMix",{type:"bar",data:{labels:runs.map(shortLabel),datasets:[
-    {label:"ok",data:runs.map(r=>statsFor(r).nOk),backgroundColor:"#34d399",borderRadius:6},
-    {label:"trunc",data:runs.map(r=>statsFor(r).nTr),backgroundColor:"#fbbf24",borderRadius:6},
-    {label:"ko",data:runs.map(r=>statsFor(r).nKo),backgroundColor:"#f87171",borderRadius:6}
-  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{title:{display:true,text:"Answers: ok / trunc / ko per run"}},
+    {label:"correct",data:runs.map(r=>statsFor(r).nOk),backgroundColor:"#34d399",borderRadius:6},
+    {label:"wrong",data:runs.map(r=>statsFor(r).nKo),backgroundColor:"#f87171",borderRadius:6},
+    {label:"trunc",data:runs.map(r=>statsFor(r).nTr),backgroundColor:"#fbbf24",borderRadius:6}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{title:{display:true,text:"Answers: correct / wrong / trunc per run"}},
     scales:{x:{stacked:true},y:{stacked:true}}}});
   mk("cTrunc",{type:"bar",data:{labels:runs.map(shortLabel),datasets:[
-    {label:"truncation %",data:runs.map(r=>{const s=statsFor(r);return s.n?100*s.nTr/s.n:0}),backgroundColor:"#fbbf24cc",borderRadius:6}
-  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{title:{display:true,text:"Truncation rate (% of answers hitting the 8K budget)"}},
+    {label:"accuracy",data:runs.map(r=>{const s=statsFor(r);return s.n?100*s.nOk/s.n:0}),backgroundColor:"#34d399cc",borderRadius:6},
+    {label:"truncation %",data:runs.map(r=>{const s=statsFor(r);return s.n?100*s.nTr/s.n:0}),backgroundColor:"#fbbf2499",borderRadius:6}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{title:{display:true,text:"Accuracy vs gold & truncation rate (%)"}},
     scales:{y:{beginAtZero:true,ticks:{callback:v=>v+"%"}}}}});
 }
 
@@ -357,7 +359,7 @@ function renderSubj(){
     .sort((a,b)=>b.n-a.n).slice(0,9).map(o=>o.s);
   mk("cSubj",{type:"bar",data:{labels:subjects,datasets:runs.map(r=>({
     label:shortLabel(r),
-    data:subjects.map(s=>{const v=RAW.filter(x=>x.run===r&&x.subject===s&&x.result==="ok"&&x.tokens>0).map(x=>x.tokens);
+    data:subjects.map(s=>{const v=RAW.filter(x=>x.run===r&&x.subject===s&&x.result!=="trunc"&&x.tokens>0).map(x=>x.tokens);
       return v.length?mean(v):null;}),
     backgroundColor:colorOf(r)+"cc",borderRadius:5}))},
     options:{responsive:true,maintainAspectRatio:false,plugins:{title:{display:true,text:"Mean tokens by subject (top 9 subjects by volume)"}},
@@ -383,7 +385,7 @@ function renderH2hSelects(){
 function renderH2h(){
   if(!selA||!selB) return;
   const P=pairsOf(selA,selB);
-  const both=P.filter(([x,y])=>x.result==="ok"&&y.result==="ok"&&x.tokens>0&&y.tokens>0);
+  const both=P.filter(([x,y])=>x.result!=="trunc"&&y.result!=="trunc"&&x.tokens>0&&y.tokens>0);
   const agree=both.filter(([x,y])=>x.pred&&y.pred&&x.pred===y.pred).length;
   const dT=both.map(([x,y])=>y.tokens-x.tokens);
   const dL=both.map(([x,y])=>y.latency_s-x.latency_s);
@@ -419,21 +421,21 @@ function renderH2h(){
       plugins:{title:{display:true,text:"Token delta distribution (B − A), negative = B more concise"}},
       scales:{y:{beginAtZero:true}}}});
 
-  // combined rating: answered rate (ok/total), width 0-1 shown as horizontal bars
+  // combined rating: accuracy (correct/total) shown as horizontal bars
   const rr=RUNS_VIEW.filter(r=>active.has(r)||r===selA||r===selB);
   mk("cEff",{type:"bar",data:{labels:rr.map(shortLabel),
-    datasets:[{label:"ok / total answers",data:rr.map(r=>100*statsFor(r).nOk/statsFor(r).n),
+    datasets:[{label:"accuracy (correct / total)",data:rr.map(r=>100*statsFor(r).nOk/statsFor(r).n),
       backgroundColor:rr.map(colorOf),borderRadius:6}]},
     options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,
-      plugins:{title:{display:true,text:"Combined rating: answered rate per run (ok / total, %)"}},
+      plugins:{title:{display:true,text:"Combined rating: accuracy per run (correct / total, %)"}},
       scales:{x:{beginAtZero:true,max:100,ticks:{callback:v=>v+"%"}}}}});
 }
 
 /* ---------- tables ---------- */
 function renderTables(){
   const runs=RUNS_VIEW;
-  let h=`<table><thead><tr><th>run</th><th>answers</th><th>ok</th><th>trunc</th><th>ko</th>
-    <th>ok %</th><th>trunc %</th><th>mean tok</th><th>median</th><th>p90</th><th>mean lat (s)</th></tr></thead><tbody>`;
+  let h=`<table><thead><tr><th>run</th><th>answers</th><th>correct</th><th>wrong</th><th>trunc</th>
+    <th>accuracy %</th><th>trunc %</th><th>mean tok</th><th>median</th><th>p90</th><th>mean lat (s)</th></tr></thead><tbody>`;
   for(const r of runs){ const s=statsFor(r);
     h+=`<tr><td><span class="dot" style="background:${colorOf(r)}"></span>${shortLabel(r)} <span class="sub">(${r})</span></td>
       <td>${s.n}</td><td>${s.nOk}</td><td>${s.nTr}</td><td>${s.nKo}</td>
@@ -447,7 +449,7 @@ function renderTables(){
   for(const s of subjects){
     h+=`<tr><td>${s}</td>`;
     for(const r of runs){ const rs=RAW.filter(x=>x.run===r&&x.subject===s);
-      const tok=rs.filter(x=>x.result==="ok"&&x.tokens>0).map(x=>x.tokens);
+      const tok=rs.filter(x=>x.result!=="trunc"&&x.tokens>0).map(x=>x.tokens);
       h+=`<td>${rs.length} · ${tok.length?fmt0(mean(tok)):"–"}</td>`; }
     h+="</tr>";
   }

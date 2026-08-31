@@ -16,6 +16,13 @@ RUNS = [
 ]
 
 
+def gold_map():
+    os.environ.setdefault("HF_HUB_OFFLINE", "1")
+    from datasets import load_dataset
+    ds = load_dataset("TIGER-Lab/MMLU-Pro", split="test")
+    return {r["question_id"]: r["answer"] for r in ds}
+
+
 def extract(raw):
     """Return (pred, trunc, out_tokens, latency) from a model_output blob."""
     raw = str(raw)
@@ -30,6 +37,7 @@ def extract(raw):
 
 
 def main():
+    gold = gold_map()
     out = []
     seen = set()
     for wd, mid, desc in RUNS:
@@ -54,9 +62,13 @@ def main():
                 except Exception:
                     continue
                 pred, trunc, tok, lat = extract(r.get("model_output", ""))
-                # result: ok = produced "ANSWER: X", ko = no answer letter found,
-                # trunc = reasoning budget exhausted (stop_reason max_tokens/length)
-                res = "trunc" if trunc else ("ok" if pred is not None else "ko")
+                # result: correct / wrong / trunc (8K reasoning budget exhausted)
+                if trunc:
+                    res = "trunc"
+                elif pred is not None and pred == gold.get(qid):
+                    res = "correct"
+                else:
+                    res = "wrong"
                 if (mid, qid) in seen:
                     continue
                 seen.add((mid, qid))
@@ -66,6 +78,7 @@ def main():
                     "question_id": qid,
                     "subject": subject,
                     "pred": pred,
+                    "gold": gold.get(qid),
                     "result": res,
                     "latency_s": lat,
                     "tokens": tok,
