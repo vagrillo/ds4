@@ -31,6 +31,7 @@ def extract(raw):
 
 def main():
     out = []
+    seen = set()
     for wd, mid, desc in RUNS:
         for f in glob.glob(os.path.join(HERE, wd, "predictions", mid, "*.jsonl")):
             subject = os.path.basename(f)[len("mmlu_pro_"):-len(".jsonl")]
@@ -56,6 +57,9 @@ def main():
                 # result: ok = produced "ANSWER: X", ko = no answer letter found,
                 # trunc = reasoning budget exhausted (stop_reason max_tokens/length)
                 res = "trunc" if trunc else ("ok" if pred is not None else "ko")
+                if (mid, qid) in seen:
+                    continue
+                seen.add((mid, qid))
                 out.append({
                     "run": mid,
                     "model": desc,
