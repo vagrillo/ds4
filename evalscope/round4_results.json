@@ -12531,6 +12531,17 @@
  {
   "run": "q35-exp20-thr08-gate27-39-r4",
   "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
+  "question_id": 6018,
+  "subject": "health",
+  "pred": "H",
+  "gold": "H",
+  "result": "correct",
+  "latency_s": 125.29601625003852,
+  "tokens": 1938
+ },
+ {
+  "run": "q35-exp20-thr08-gate27-39-r4",
+  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
   "question_id": 10783,
   "subject": "philosophy",
   "pred": "A",
