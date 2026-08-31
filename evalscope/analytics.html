@@ -97,13 +97,16 @@
   <div id="err"></div>
 
   <div class="toolbar">
+    <button id="filterToggle" class="btn" title="Run-name filter" aria-expanded="false">⛶ Filter</button>
+    <span class="sub" id="filterInfo"></span>
+  </div>
+  <div class="toolbar" id="filterBar" style="display:none">
     <input id="nameFilter" type="text" value="*r4" spellcheck="false" placeholder="run-name filter, e.g. *r4" size="14"
            style="background:#141a30;color:var(--tx);border:1px solid var(--card-brd);border-radius:10px;padding:7px 12px;font-size:13.5px">
-    <span class="sub" id="filterInfo"></span>
   </div>
   <div class="toolbar" id="chips" aria-label="Run filter"></div>
 
-  <h2>Scoreboard <span class="hint">accuracy per selected run · correct / total answers vs MMLU-Pro gold, 0.xxx format — best run highlighted</span></h2>
+  <h2>Scoreboard <span class="hint">big numbers: paired accuracy — only questions answered by BOTH selected r4 runs · small: own-run accuracy below</span></h2>
   <div class="grid g-cards" id="scoreboard"></div>
 
   <h2>Run summary <span class="hint">per selected run · non-truncated answers unless noted</span></h2>
@@ -249,17 +252,38 @@ function applyFilter(){
 
 function renderScoreboard(){
   const el=$("scoreboard"); el.innerHTML = active.size===0 ? "" : "";
-  const sorted=[...active].map(r=>({r,s:statsFor(r)}))
-    .sort((a,b)=>(b.s.n?b.s.nOk/b.s.n:0)-(a.s.n?a.s.nOk/a.s.n:0));
-  const best=sorted.length?sorted[0].s.nOk/sorted[0].s.n:NaN;
+  const runs=[...active];
+  // paired accuracy: questions answered by ALL selected runs
+  const pairScore=new Map();
+  if(runs.length>1){
+    const sets=runs.map(r=>new Set(RAW.filter(x=>x.run===r).map(x=>x.subject+"|"+x.question_id)));
+    const common=[...sets[0]].filter(k=>sets.every(s=>s.has(k)));
+    for(const r of runs){
+      const M=new Map(RAW.filter(x=>x.run===r).map(x=>[x.subject+"|"+x.question_id,x]));
+      const okc=common.filter(k=>M.get(k).result==="correct").length;
+      pairScore.set(r,{ok:okc,n:common.length});
+    }
+  }
+  const scoreOf=(r)=>pairScore.size?pairScore.get(r).ok/pairScore.get(r).n
+                     :(s=>s.n?s.nOk/s.n:NaN)(statsFor(r));
+  const sorted=runs.map(r=>({r,s:statsFor(r)})).sort((a,b)=>scoreOf(b.r)-scoreOf(a.r));
+  const best=sorted.length?scoreOf(sorted[0].r):NaN;
+  const single=runs.length<2;
   for(const {r,s} of sorted){
-    const score=s.n?s.nOk/s.n:NaN, col=colorOf(r);
+    const score=scoreOf(r), col=colorOf(r);
+    const big=single
+      ? (s.n?score.toFixed(3):"–")
+      : score.toFixed(3);
+    const bigNote=single?"own-run accuracy":`${pairScore.get(r).ok} correct / ${pairScore.get(r).n} paired`;
     const d=document.createElement("div"); d.className="card kpi";
     d.innerHTML=`<div class="l"><span class="dot" style="background:${col}"></span>${shortName(r)}</div>
       <div class="v" style="font-size:40px;background:linear-gradient(90deg,${col},#e8ecf8);
         -webkit-background-clip:text;background-clip:text;color:transparent;
-        ${s.nOk/s.n===best?"text-shadow:0 0 24px "+col+"88;":""}">${s.n?score.toFixed(3):"–"}</div>
-      <div class="m">${s.nOk} correct / ${s.n} answers</div>
+        ${score===best?"text-shadow:0 0 24px "+col+"88;":""}">${big}</div>
+      <div class="m">${bigNote}</div>
+      <div class="m" style="margin-top:8px;font-size:12px;color:var(--tx2)">
+        own run: <span style="color:var(--tx)">${s.n?(s.nOk/s.n).toFixed(3):"–"}</span>
+        (${s.nOk} correct / ${s.n})</div>
       <div class="m">wrong ${s.nKo} · trunc ${s.nTr}</div>`;
     el.appendChild(d);
   }
@@ -482,6 +506,12 @@ async function load(){
   }
 }
 $("nameFilter").addEventListener("input",()=>{ applyFilter(); renderChips(); renderH2hSelects(); renderAll(); });
+$("filterToggle").addEventListener("click",()=>{
+  const bar=$("filterBar"), open=bar.style.display==="none";
+  bar.style.display=open?"flex":"none";
+  $("filterToggle").setAttribute("aria-expanded",open);
+  if(open) $("nameFilter").focus();
+});
 load();
 </script>
 </body>
