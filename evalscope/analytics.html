@@ -155,6 +155,11 @@
     <div class="card"><button class="fs-btn" title="Fullscreen">⤢</button><div class="tablewrap" id="tSubj"></div></div>
   </div>
 
+  <h2>Per-subject score matrix <span class="hint">paired accuracy 0.xxx per subject — green = subject winner, red = loser, ✓ wins; computed only on questions answered by all selected runs</span></h2>
+  <div class="grid">
+    <div class="card"><button class="fs-btn" title="Fullscreen">⤢</button><div class="tablewrap" id="tMatrix"></div></div>
+  </div>
+
   <div class="note">Note: with this dataset alone, “quality” is shown as the ok / trunc / ko mix (trunc = 8K reasoning
     budget exhausted) and as cross-run answer agreement on identical questions; it is not accuracy vs. gold labels.
     tok/s is Σtokens / Σlatency over non-truncated answers.</div>
@@ -480,9 +485,54 @@ function renderTables(){
   $("tSubj").innerHTML=h+"</tbody></table>";
 }
 
+/* per-subject score matrix: paired accuracy 0.xxx, winner cell green, loser red */
+function renderScoreMatrix(){
+  const runs=[...active];
+  const el=$("tMatrix");
+  if(runs.length<2){ el.innerHTML=`<div class="note">Select at least two runs to compare per-subject paired scores.</div>`; return; }
+  const subjects=[...new Set(RAW.map(r=>r.subject))].sort();
+  const sets=runs.map(r=>new Set(RAW.filter(x=>x.run===r).map(x=>x.subject+"|"+x.question_id)));
+  const maps=runs.map(r=>new Map(RAW.filter(x=>x.run===r).map(x=>[x.subject+"|"+x.question_id,x])));
+  let h=`<table><thead><tr><th>subject</th>${runs.map(r=>
+    `<th><span class="dot" style="background:${colorOf(r)}"></span>${shortName(r)}</th>`).join("")}</tr></thead><tbody>`;
+  let totWins=Object.fromEntries(runs.map(r=>[r,0]));
+  for(const s of subjects){
+    // common keys within this subject across all selected runs
+    const common=[];
+    for(const k of sets[0]) if(k.startsWith(s+"|")&&sets.every((st,i)=>st.has(k))) common.push(k);
+    if(!common.length) continue;
+    const scores=runs.map((r,i)=>{
+      const okc=common.filter(k=>maps[i].get(k).result==="correct").length;
+      return {ok:okc,n:common.length,score:okc/common.length};
+    });
+    const best=Math.max(...scores.map(x=>x.score));
+    h+=`<tr><td>${s} <span class="sub">(${common.length})</span></td>`;
+    scores.forEach((x,i)=>{
+      const win=scores.length>1&&x.score===best&&best>0;
+      const lose=scores.length>1&&x.score<best;
+      const bg=win?"rgba(52,211,153,.22)":lose?"rgba(248,113,113,.16)":"transparent";
+      const mark=win?" ✓":"";
+      totWins[runs[i]]+=win?1:0;
+      h+=`<td style="background:${bg};${win?"color:#34d399;font-weight:700":""}${lose?";color:#f87171":""}">${x.score.toFixed(3)}${mark}</td>`;
+    });
+    h+="</tr>";
+  }
+  // totals row
+  const bestW=Math.max(...runs.map(r=>totWins[r]));
+  h+=`<tr style="border-top:2px solid rgba(255,255,255,.25)"><td><b>subjects won</b></td>`;
+  for(const r of runs){
+    const win=totWins[r]===bestW&&bestW>0;
+    h+=`<td style="${win?"color:#34d399;font-weight:700":""}">${totWins[r]}/${subjects.filter(s=>{
+      for(const k of sets[0]) if(k.startsWith(s+"|")) return sets.every(st=>st.has(k));
+      return false;}).length}${win?" ✓":""}</td>`;
+  }
+  h+="</tr></tbody></table>";
+  el.innerHTML=h;
+}
+
 function renderAll(){
   renderScoreboard(); renderKpis(); renderMix(); renderVerb(); renderLat(); renderSubj(); renderH2h();
-  renderAgree(); renderTables(); initFullscreen();
+  renderAgree(); renderTables(); renderScoreMatrix(); initFullscreen();
   const st=$("status");
   if(st) st.textContent=`${RAW.length} records · ${RUNS_VIEW.length}/${RUNS.length} runs shown · fetched ${new Date().toLocaleTimeString("en-GB")}`;
 }
