@@ -7702,6 +7702,17 @@
  {
   "run": "q35-default8-r4",
   "model": "Qwen 3.6 35B A3B (reference implementation)",
+  "question_id": 6042,
+  "subject": "health",
+  "pred": "A",
+  "gold": "A",
+  "result": "correct",
+  "latency_s": 204.03264487488195,
+  "tokens": 3147
+ },
+ {
+  "run": "q35-default8-r4",
+  "model": "Qwen 3.6 35B A3B (reference implementation)",
   "question_id": 10774,
   "subject": "philosophy",
   "pred": "A",
