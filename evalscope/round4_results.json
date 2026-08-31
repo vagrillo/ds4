@@ -11426,6 +11426,18 @@
  {
   "run": "q35-default8-r4",
   "model": "Qwen 3.6 35B A3B (reference implementation)",
+  "question_id": 4712,
+  "subject": "history",
+  "pred": "A",
+  "gold": "A",
+  "result": "correct",
+  "truncated": false,
+  "latency_s": 141.5770250421483,
+  "tokens": 2206
+ },
+ {
+  "run": "q35-default8-r4",
+  "model": "Qwen 3.6 35B A3B (reference implementation)",
   "question_id": 5059,
   "subject": "other",
   "pred": "C",
