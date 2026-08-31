@@ -224,6 +224,10 @@ function mk(id,cfg){ if(charts[id]) charts[id].destroy();
 
 function renderChips(){
   const c=$("chips"); c.innerHTML="";
+  if($("filterBar").style.display==="none"){   // collapsed: hide chips + refresh too
+    c.style.display="none"; return;
+  }
+  c.style.display="flex";
   for(const run of RUNS){
     const b=document.createElement("button");
     b.className="btn"; b.textContent=shortLabel(run); b.title=run;
