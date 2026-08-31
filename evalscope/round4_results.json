@@ -7768,6 +7768,61 @@
  {
   "run": "q35-default8-r4",
   "model": "Qwen 3.6 35B A3B (reference implementation)",
+  "question_id": 6048,
+  "subject": "health",
+  "pred": "A",
+  "gold": "A",
+  "result": "correct",
+  "latency_s": 156.8848640830256,
+  "tokens": 2486
+ },
+ {
+  "run": "q35-default8-r4",
+  "model": "Qwen 3.6 35B A3B (reference implementation)",
+  "question_id": 6049,
+  "subject": "health",
+  "pred": "J",
+  "gold": "J",
+  "result": "correct",
+  "latency_s": 93.60879345913418,
+  "tokens": 1523
+ },
+ {
+  "run": "q35-default8-r4",
+  "model": "Qwen 3.6 35B A3B (reference implementation)",
+  "question_id": 6050,
+  "subject": "health",
+  "pred": "I",
+  "gold": "I",
+  "result": "correct",
+  "latency_s": 219.35994845815003,
+  "tokens": 3183
+ },
+ {
+  "run": "q35-default8-r4",
+  "model": "Qwen 3.6 35B A3B (reference implementation)",
+  "question_id": 6051,
+  "subject": "health",
+  "pred": "F",
+  "gold": "F",
+  "result": "correct",
+  "latency_s": 174.87919733393937,
+  "tokens": 2541
+ },
+ {
+  "run": "q35-default8-r4",
+  "model": "Qwen 3.6 35B A3B (reference implementation)",
+  "question_id": 6052,
+  "subject": "health",
+  "pred": "I",
+  "gold": "G",
+  "result": "wrong",
+  "latency_s": 192.33483166689985,
+  "tokens": 2733
+ },
+ {
+  "run": "q35-default8-r4",
+  "model": "Qwen 3.6 35B A3B (reference implementation)",
   "question_id": 10774,
   "subject": "philosophy",
   "pred": "A",
@@ -12450,6 +12505,28 @@
   "result": "correct",
   "latency_s": 47.24152358295396,
   "tokens": 728
+ },
+ {
+  "run": "q35-exp20-thr08-gate27-39-r4",
+  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
+  "question_id": 6016,
+  "subject": "health",
+  "pred": "C",
+  "gold": "C",
+  "result": "correct",
+  "latency_s": 86.19985725008883,
+  "tokens": 1178
+ },
+ {
+  "run": "q35-exp20-thr08-gate27-39-r4",
+  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
+  "question_id": 6017,
+  "subject": "health",
+  "pred": "A",
+  "gold": "A",
+  "result": "correct",
+  "latency_s": 195.0581632917747,
+  "tokens": 2961
  },
  {
   "run": "q35-exp20-thr08-gate27-39-r4",
