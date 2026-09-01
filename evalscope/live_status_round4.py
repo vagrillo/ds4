@@ -136,7 +136,11 @@ def main():
     print("  native wins over expanded: %d = genuine %d (+ expanded-truncated %d, "
           "expanded-no-answer %d)" % (losses_genuine, losses_genuine - losses_budget - losses_noans,
                                       losses_budget, losses_noans))
-    print("  both correct (ties): %d" % ties)
+    print("")
+    print(">>> BOTH CORRECT (ties): %d of %d common (%.1f%%) — both models right, "
+          "efficiency compared on these below" % (
+              ties, nq, 100.0 * ties / nq if nq else 0.0) + " <<<")
+    print("")
 
     # --- token savings on ties (both correct): efficiency isolated from correctness ---
     tk_d, tk_g, lat_d, lat_g = [], [], [], []
