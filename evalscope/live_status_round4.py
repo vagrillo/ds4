@@ -172,6 +172,41 @@ def main():
         print("  expanded cheaper on %d/%d ties (%.0f%%)" % (
             wins_tok, len(tk_d), 100.0 * wins_tok / len(tk_d)))
 
+        # --- per-subject ties table: mean tokens / latency for both configs ---
+        acc = {}
+        for k in set(d) & set(g):
+            pd_, td_, tkd_, ld_ = d[k][:4]
+            pg, tg, tkg, lg = g[k][:4]
+            if pd_ is None or pg is None:
+                continue
+            if not (pd_ == gold.get(k[1]) and pg == gold.get(k[1])):
+                continue
+            if td_ or tg or tkd_ == 0 or tkg == 0:
+                continue
+            a = acc.setdefault(k[0], [0, 0, 0.0, 0.0, 0])
+            a[0] += tkd_; a[1] += tkg; a[2] += ld_; a[3] += lg; a[4] += 1
+        print("")
+        print("Ties-only efficiency by subject (both correct, non-truncated):")
+        hdr2 = "%-16s %6s %10s %10s %12s %12s %9s" % (
+            "subject", "n", "nat tok", "exp tok", "nat lat s", "exp lat s", "tok saving")
+        print(hdr2)
+        print("-" * len(hdr2))
+        for s in sorted(acc):
+            v = acc[s]
+            n_ = v[4]
+            mt_d, mt_g = v[0] / n_, v[1] / n_
+            ml_d, ml_g = v[2] / n_, v[3] / n_
+            sv = 100.0 * (mt_d - mt_g) / mt_d if mt_d else 0.0
+            print("%-16s %6d %10.0f %10.0f %12.0f %12.0f %8.1f%%" % (
+                s, n_, mt_d, mt_g, ml_d, ml_g, sv))
+        if acc:
+            T = [sum(v[i] for v in acc.values()) for i in range(5)]
+            tmd, tmg = T[0] / T[4], T[1] / T[4]
+            print("-" * len(hdr2))
+            print("%-16s %6d %10.0f %10.0f %12.0f %12.0f %8.1f%%" % (
+                "TOTAL", T[4], tmd, tmg, T[2] / T[4], T[3] / T[4],
+                100.0 * (tmd - tmg) / tmd if tmd else 0.0))
+
     # --- per-config stats on ALL their own rows (not just the common pair) ---
     def all_row_stats(rows):
         corr = sum(1 for k, v in rows.items() if v[0] == gold.get(k[1]))
