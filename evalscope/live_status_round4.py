@@ -138,6 +138,36 @@ def main():
                                       losses_budget, losses_noans))
     print("  both correct (ties): %d" % ties)
 
+    # --- token savings on ties (both correct): efficiency isolated from correctness ---
+    tk_d, tk_g, lat_d, lat_g = [], [], [], []
+    for k in set(d) & set(g):
+        if d[k][0] is None or g[k][0] is None:
+            continue
+        if not (d[k][0] == gold.get(k[1]) and g[k][0] == gold.get(k[1])):
+            continue
+        if d[k][1] or g[k][1] or d[k][2] == 0 or g[k][2] == 0:
+            continue
+        tk_d.append(d[k][2]); tk_g.append(g[k][2])
+        if d[k][3] > 0 and g[k][3] > 0:
+            lat_d.append(d[k][3]); lat_g.append(g[k][3])
+    if tk_d:
+        md_ = sum(tk_d) / len(tk_d)
+        mg_ = sum(tk_g) / len(tk_g)
+        save = 100.0 * (md_ - mg_) / md_
+        print("")
+        print("Ties-only efficiency (both correct, non-truncated, %d questions):" % len(tk_d))
+        print("  native:   %6.0f mean tok" % md_)
+        print("  expanded: %6.0f mean tok  (%+.1f%% token saving)" % (mg_, save))
+        paired = [(a, b) for a, b in zip(lat_d, lat_g) if a > 0 and b > 0]
+        if lat_d:
+            ld_ = sum(lat_d) / len(lat_d)
+            lg_ = sum(lat_g) / len(lat_g)
+            print("  latency:  %.0fs vs %.0fs  (%+.1f%% time saving)" % (
+                ld_, lg_, 100.0 * (ld_ - lg_) / ld_))
+        wins_tok = sum(1 for a, b in zip(tk_d, tk_g) if b < a)
+        print("  expanded cheaper on %d/%d ties (%.0f%%)" % (
+            wins_tok, len(tk_d), 100.0 * wins_tok / len(tk_d)))
+
     # --- per-config stats on ALL their own rows (not just the common pair) ---
     def all_row_stats(rows):
         corr = sum(1 for k, v in rows.items() if v[0] == gold.get(k[1]))
