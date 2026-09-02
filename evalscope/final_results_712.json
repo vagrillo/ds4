@@ -1214,6 +1214,18 @@
  {
   "run": "q35-default8-r4",
   "model": "Qwen 3.6 35B A3B (reference implementation)",
+  "question_id": 9091,
+  "subject": "physics",
+  "pred": null,
+  "gold": "A",
+  "result": "trunc",
+  "truncated": true,
+  "latency_s": 6231.89747283305,
+  "tokens": 40000
+ },
+ {
+  "run": "q35-default8-r4",
+  "model": "Qwen 3.6 35B A3B (reference implementation)",
   "question_id": 6001,
   "subject": "health",
   "pred": "E",
@@ -8544,6 +8556,18 @@
   "tokens": 1537
  },
  {
+  "run": "q35-default8-r4",
+  "model": "Qwen 3.6 35B A3B (reference implementation)",
+  "question_id": 10399,
+  "subject": "computer science",
+  "pred": null,
+  "gold": "B",
+  "result": "trunc",
+  "truncated": true,
+  "latency_s": 6137.539204958826,
+  "tokens": 40000
+ },
+ {
   "run": "q35-exp20-thr08-gate27-39-r4",
   "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
   "question_id": 1987,
@@ -12806,18 +12830,6 @@
  {
   "run": "q35-exp20-thr08-gate27-39-r4",
   "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
-  "question_id": 3560,
-  "subject": "chemistry",
-  "pred": null,
-  "gold": "J",
-  "result": "wrong",
-  "truncated": false,
-  "latency_s": 4973.09654700011,
-  "tokens": 32459
- },
- {
-  "run": "q35-exp20-thr08-gate27-39-r4",
-  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
   "question_id": 3563,
   "subject": "chemistry",
   "pred": "F",
@@ -12826,6 +12838,18 @@
   "truncated": false,
   "latency_s": 276.8729322501458,
   "tokens": 3725
+ },
+ {
+  "run": "q35-exp20-thr08-gate27-39-r4",
+  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
+  "question_id": 3560,
+  "subject": "chemistry",
+  "pred": null,
+  "gold": "J",
+  "result": "trunc",
+  "truncated": true,
+  "latency_s": 6362.37422537501,
+  "tokens": 40000
  },
  {
   "run": "q35-exp20-thr08-gate27-39-r4",
