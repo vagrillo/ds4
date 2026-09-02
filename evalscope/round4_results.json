@@ -8750,6 +8750,42 @@
  {
   "run": "q35-default8-r4",
   "model": "Qwen 3.6 35B A3B (reference implementation)",
+  "question_id": 9067,
+  "subject": "physics",
+  "pred": "B",
+  "gold": "B",
+  "result": "correct",
+  "truncated": false,
+  "latency_s": 784.7322463749442,
+  "tokens": 10651
+ },
+ {
+  "run": "q35-default8-r4",
+  "model": "Qwen 3.6 35B A3B (reference implementation)",
+  "question_id": 9093,
+  "subject": "physics",
+  "pred": "H",
+  "gold": "H",
+  "result": "correct",
+  "truncated": false,
+  "latency_s": 586.0034008338116,
+  "tokens": 8395
+ },
+ {
+  "run": "q35-default8-r4",
+  "model": "Qwen 3.6 35B A3B (reference implementation)",
+  "question_id": 9091,
+  "subject": "physics",
+  "pred": null,
+  "gold": "A",
+  "result": "trunc",
+  "truncated": true,
+  "latency_s": 6231.89747283305,
+  "tokens": 40000
+ },
+ {
+  "run": "q35-default8-r4",
+  "model": "Qwen 3.6 35B A3B (reference implementation)",
   "question_id": 6001,
   "subject": "health",
   "pred": "E",
@@ -11150,6 +11186,54 @@
  {
   "run": "q35-default8-r4",
   "model": "Qwen 3.6 35B A3B (reference implementation)",
+  "question_id": 86,
+  "subject": "business",
+  "pred": "F",
+  "gold": "F",
+  "result": "correct",
+  "truncated": false,
+  "latency_s": 2840.254596875049,
+  "tokens": 24601
+ },
+ {
+  "run": "q35-default8-r4",
+  "model": "Qwen 3.6 35B A3B (reference implementation)",
+  "question_id": 102,
+  "subject": "business",
+  "pred": "J",
+  "gold": "J",
+  "result": "correct",
+  "truncated": false,
+  "latency_s": 902.0841540421825,
+  "tokens": 11392
+ },
+ {
+  "run": "q35-default8-r4",
+  "model": "Qwen 3.6 35B A3B (reference implementation)",
+  "question_id": 109,
+  "subject": "business",
+  "pred": "J",
+  "gold": "J",
+  "result": "correct",
+  "truncated": false,
+  "latency_s": 596.566399875097,
+  "tokens": 8470
+ },
+ {
+  "run": "q35-default8-r4",
+  "model": "Qwen 3.6 35B A3B (reference implementation)",
+  "question_id": 113,
+  "subject": "business",
+  "pred": "J",
+  "gold": "A",
+  "result": "wrong",
+  "truncated": false,
+  "latency_s": 1546.6904143330175,
+  "tokens": 16554
+ },
+ {
+  "run": "q35-default8-r4",
+  "model": "Qwen 3.6 35B A3B (reference implementation)",
   "question_id": 3526,
   "subject": "chemistry",
   "pred": "C",
@@ -11746,6 +11830,18 @@
   "truncated": false,
   "latency_s": 864.3008792088367,
   "tokens": 11595
+ },
+ {
+  "run": "q35-default8-r4",
+  "model": "Qwen 3.6 35B A3B (reference implementation)",
+  "question_id": 3563,
+  "subject": "chemistry",
+  "pred": "F",
+  "gold": "F",
+  "result": "correct",
+  "truncated": false,
+  "latency_s": 1069.9247942080256,
+  "tokens": 13244
  },
  {
   "run": "q35-default8-r4",
@@ -14726,6 +14822,90 @@
  {
   "run": "q35-default8-r4",
   "model": "Qwen 3.6 35B A3B (reference implementation)",
+  "question_id": 11306,
+  "subject": "engineering",
+  "pred": "E",
+  "gold": "A",
+  "result": "wrong",
+  "truncated": false,
+  "latency_s": 675.8281633339357,
+  "tokens": 9582
+ },
+ {
+  "run": "q35-default8-r4",
+  "model": "Qwen 3.6 35B A3B (reference implementation)",
+  "question_id": 11307,
+  "subject": "engineering",
+  "pred": "J",
+  "gold": "J",
+  "result": "correct",
+  "truncated": false,
+  "latency_s": 852.0449965000153,
+  "tokens": 11546
+ },
+ {
+  "run": "q35-default8-r4",
+  "model": "Qwen 3.6 35B A3B (reference implementation)",
+  "question_id": 11315,
+  "subject": "engineering",
+  "pred": "B",
+  "gold": "B",
+  "result": "correct",
+  "truncated": false,
+  "latency_s": 2742.66066087503,
+  "tokens": 24772
+ },
+ {
+  "run": "q35-default8-r4",
+  "model": "Qwen 3.6 35B A3B (reference implementation)",
+  "question_id": 11316,
+  "subject": "engineering",
+  "pred": "C",
+  "gold": "C",
+  "result": "correct",
+  "truncated": false,
+  "latency_s": 1291.5883045000955,
+  "tokens": 15050
+ },
+ {
+  "run": "q35-default8-r4",
+  "model": "Qwen 3.6 35B A3B (reference implementation)",
+  "question_id": 11319,
+  "subject": "engineering",
+  "pred": "H",
+  "gold": "H",
+  "result": "correct",
+  "truncated": false,
+  "latency_s": 693.71084075002,
+  "tokens": 9955
+ },
+ {
+  "run": "q35-default8-r4",
+  "model": "Qwen 3.6 35B A3B (reference implementation)",
+  "question_id": 11330,
+  "subject": "engineering",
+  "pred": "F",
+  "gold": "F",
+  "result": "correct",
+  "truncated": false,
+  "latency_s": 910.007865749998,
+  "tokens": 12018
+ },
+ {
+  "run": "q35-default8-r4",
+  "model": "Qwen 3.6 35B A3B (reference implementation)",
+  "question_id": 11331,
+  "subject": "engineering",
+  "pred": "I",
+  "gold": "I",
+  "result": "correct",
+  "truncated": false,
+  "latency_s": 1010.5638040830381,
+  "tokens": 12942
+ },
+ {
+  "run": "q35-default8-r4",
+  "model": "Qwen 3.6 35B A3B (reference implementation)",
   "question_id": 2804,
   "subject": "biology",
   "pred": "B",
@@ -15942,10 +16122,10 @@
   "subject": "computer science",
   "pred": null,
   "gold": "B",
-  "result": "wrong",
-  "truncated": false,
-  "latency_s": 4352.205740916077,
-  "tokens": 32558
+  "result": "trunc",
+  "truncated": true,
+  "latency_s": 6137.539204958826,
+  "tokens": 40000
  },
  {
   "run": "q35-exp20-thr08-gate27-39-r4",
@@ -17126,18 +17306,6 @@
  {
   "run": "q35-exp20-thr08-gate27-39-r4",
   "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
-  "question_id": 9091,
-  "subject": "physics",
-  "pred": null,
-  "gold": "A",
-  "result": "trunc",
-  "truncated": true,
-  "latency_s": 573.2754523339681,
-  "tokens": 8192
- },
- {
-  "run": "q35-exp20-thr08-gate27-39-r4",
-  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
   "question_id": 9092,
   "subject": "physics",
   "pred": "C",
@@ -17170,6 +17338,18 @@
   "truncated": false,
   "latency_s": 142.61147304112092,
   "tokens": 2492
+ },
+ {
+  "run": "q35-exp20-thr08-gate27-39-r4",
+  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
+  "question_id": 9091,
+  "subject": "physics",
+  "pred": "I",
+  "gold": "A",
+  "result": "wrong",
+  "truncated": false,
+  "latency_s": 878.4065409169998,
+  "tokens": 9969
  },
  {
   "run": "q35-exp20-thr08-gate27-39-r4",
@@ -17966,18 +18146,6 @@
  {
   "run": "q35-exp20-thr08-gate27-39-r4",
   "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
-  "question_id": 10790,
-  "subject": "philosophy",
-  "pred": null,
-  "gold": "D",
-  "result": "trunc",
-  "truncated": true,
-  "latency_s": 575.130890917033,
-  "tokens": 8192
- },
- {
-  "run": "q35-exp20-thr08-gate27-39-r4",
-  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
   "question_id": 10791,
   "subject": "philosophy",
   "pred": "I",
@@ -18394,6 +18562,18 @@
   "truncated": false,
   "latency_s": 94.21939062513411,
   "tokens": 1758
+ },
+ {
+  "run": "q35-exp20-thr08-gate27-39-r4",
+  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
+  "question_id": 10790,
+  "subject": "philosophy",
+  "pred": "D",
+  "gold": "D",
+  "result": "correct",
+  "truncated": false,
+  "latency_s": 134.57572366599925,
+  "tokens": 2086
  },
  {
   "run": "q35-exp20-thr08-gate27-39-r4",
@@ -19202,18 +19382,6 @@
  {
   "run": "q35-exp20-thr08-gate27-39-r4",
   "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
-  "question_id": 86,
-  "subject": "business",
-  "pred": null,
-  "gold": "F",
-  "result": "trunc",
-  "truncated": true,
-  "latency_s": 602.5193477917928,
-  "tokens": 8192
- },
- {
-  "run": "q35-exp20-thr08-gate27-39-r4",
-  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
   "question_id": 87,
   "subject": "business",
   "pred": "A",
@@ -19394,18 +19562,6 @@
  {
   "run": "q35-exp20-thr08-gate27-39-r4",
   "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
-  "question_id": 102,
-  "subject": "business",
-  "pred": null,
-  "gold": "J",
-  "result": "trunc",
-  "truncated": true,
-  "latency_s": 611.1138313331176,
-  "tokens": 8192
- },
- {
-  "run": "q35-exp20-thr08-gate27-39-r4",
-  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
   "question_id": 103,
   "subject": "business",
   "pred": "I",
@@ -19526,18 +19682,6 @@
  {
   "run": "q35-exp20-thr08-gate27-39-r4",
   "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
-  "question_id": 113,
-  "subject": "business",
-  "pred": null,
-  "gold": "A",
-  "result": "trunc",
-  "truncated": true,
-  "latency_s": 610.4517676669639,
-  "tokens": 8192
- },
- {
-  "run": "q35-exp20-thr08-gate27-39-r4",
-  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
   "question_id": 114,
   "subject": "business",
   "pred": "B",
@@ -19558,18 +19702,6 @@
   "truncated": false,
   "latency_s": 103.08861291687936,
   "tokens": 1784
- },
- {
-  "run": "q35-exp20-thr08-gate27-39-r4",
-  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
-  "question_id": 116,
-  "subject": "business",
-  "pred": "E",
-  "gold": "J",
-  "result": "wrong",
-  "truncated": true,
-  "latency_s": 599.6044037500396,
-  "tokens": 8192
  },
  {
   "run": "q35-exp20-thr08-gate27-39-r4",
@@ -19618,6 +19750,54 @@
   "truncated": false,
   "latency_s": 76.12239120807499,
   "tokens": 1274
+ },
+ {
+  "run": "q35-exp20-thr08-gate27-39-r4",
+  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
+  "question_id": 86,
+  "subject": "business",
+  "pred": "F",
+  "gold": "F",
+  "result": "correct",
+  "truncated": false,
+  "latency_s": 805.472792541841,
+  "tokens": 9372
+ },
+ {
+  "run": "q35-exp20-thr08-gate27-39-r4",
+  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
+  "question_id": 102,
+  "subject": "business",
+  "pred": "J",
+  "gold": "J",
+  "result": "correct",
+  "truncated": false,
+  "latency_s": 714.9159148340113,
+  "tokens": 8725
+ },
+ {
+  "run": "q35-exp20-thr08-gate27-39-r4",
+  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
+  "question_id": 113,
+  "subject": "business",
+  "pred": "A",
+  "gold": "A",
+  "result": "correct",
+  "truncated": false,
+  "latency_s": 961.3539169591386,
+  "tokens": 11115
+ },
+ {
+  "run": "q35-exp20-thr08-gate27-39-r4",
+  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
+  "question_id": 116,
+  "subject": "business",
+  "pred": "J",
+  "gold": "J",
+  "result": "correct",
+  "truncated": false,
+  "latency_s": 230.48662112490274,
+  "tokens": 3475
  },
  {
   "run": "q35-exp20-thr08-gate27-39-r4",
@@ -19810,18 +19990,6 @@
   "truncated": false,
   "latency_s": 214.94898633402772,
   "tokens": 3581
- },
- {
-  "run": "q35-exp20-thr08-gate27-39-r4",
-  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
-  "question_id": 3542,
-  "subject": "chemistry",
-  "pred": null,
-  "gold": "A",
-  "result": "trunc",
-  "truncated": true,
-  "latency_s": 620.7127249999903,
-  "tokens": 8192
  },
  {
   "run": "q35-exp20-thr08-gate27-39-r4",
@@ -20030,18 +20198,6 @@
  {
   "run": "q35-exp20-thr08-gate27-39-r4",
   "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
-  "question_id": 3560,
-  "subject": "chemistry",
-  "pred": null,
-  "gold": "J",
-  "result": "trunc",
-  "truncated": true,
-  "latency_s": 605.0713553749956,
-  "tokens": 8192
- },
- {
-  "run": "q35-exp20-thr08-gate27-39-r4",
-  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
   "question_id": 3561,
   "subject": "chemistry",
   "pred": "I",
@@ -20062,18 +20218,6 @@
   "truncated": false,
   "latency_s": 433.3923744170461,
   "tokens": 6068
- },
- {
-  "run": "q35-exp20-thr08-gate27-39-r4",
-  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
-  "question_id": 3563,
-  "subject": "chemistry",
-  "pred": null,
-  "gold": "F",
-  "result": "trunc",
-  "truncated": true,
-  "latency_s": 609.564312750008,
-  "tokens": 8192
  },
  {
   "run": "q35-exp20-thr08-gate27-39-r4",
@@ -20230,6 +20374,42 @@
   "truncated": false,
   "latency_s": 99.67322979215533,
   "tokens": 1666
+ },
+ {
+  "run": "q35-exp20-thr08-gate27-39-r4",
+  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
+  "question_id": 3542,
+  "subject": "chemistry",
+  "pred": "B",
+  "gold": "A",
+  "result": "wrong",
+  "truncated": false,
+  "latency_s": 1462.7645670410711,
+  "tokens": 14332
+ },
+ {
+  "run": "q35-exp20-thr08-gate27-39-r4",
+  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
+  "question_id": 3563,
+  "subject": "chemistry",
+  "pred": "F",
+  "gold": "F",
+  "result": "correct",
+  "truncated": false,
+  "latency_s": 276.8729322501458,
+  "tokens": 3725
+ },
+ {
+  "run": "q35-exp20-thr08-gate27-39-r4",
+  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
+  "question_id": 3560,
+  "subject": "chemistry",
+  "pred": null,
+  "gold": "J",
+  "result": "trunc",
+  "truncated": true,
+  "latency_s": 6362.37422537501,
+  "tokens": 40000
  },
  {
   "run": "q35-exp20-thr08-gate27-39-r4",
@@ -21458,18 +21638,6 @@
  {
   "run": "q35-exp20-thr08-gate27-39-r4",
   "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
-  "question_id": 4669,
-  "subject": "history",
-  "pred": "D",
-  "gold": "D",
-  "result": "correct",
-  "truncated": true,
-  "latency_s": 4357.4030520915985,
-  "tokens": 30000
- },
- {
-  "run": "q35-exp20-thr08-gate27-39-r4",
-  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
   "question_id": 4672,
   "subject": "history",
   "pred": "B",
@@ -22066,6 +22234,18 @@
   "truncated": false,
   "latency_s": 224.49292570818216,
   "tokens": 2928
+ },
+ {
+  "run": "q35-exp20-thr08-gate27-39-r4",
+  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
+  "question_id": 4669,
+  "subject": "history",
+  "pred": "C",
+  "gold": "D",
+  "result": "wrong",
+  "truncated": false,
+  "latency_s": 104.09348391601816,
+  "tokens": 1738
  },
  {
   "run": "q35-exp20-thr08-gate27-39-r4",
@@ -22826,18 +23006,6 @@
  {
   "run": "q35-exp20-thr08-gate27-39-r4",
   "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
-  "question_id": 11296,
-  "subject": "engineering",
-  "pred": null,
-  "gold": "I",
-  "result": "trunc",
-  "truncated": true,
-  "latency_s": 4134.730753874988,
-  "tokens": 30000
- },
- {
-  "run": "q35-exp20-thr08-gate27-39-r4",
-  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
   "question_id": 11297,
   "subject": "engineering",
   "pred": "F",
@@ -22934,30 +23102,6 @@
  {
   "run": "q35-exp20-thr08-gate27-39-r4",
   "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
-  "question_id": 11306,
-  "subject": "engineering",
-  "pred": null,
-  "gold": "A",
-  "result": "trunc",
-  "truncated": true,
-  "latency_s": 585.6805627080612,
-  "tokens": 8192
- },
- {
-  "run": "q35-exp20-thr08-gate27-39-r4",
-  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
-  "question_id": 11307,
-  "subject": "engineering",
-  "pred": null,
-  "gold": "J",
-  "result": "trunc",
-  "truncated": true,
-  "latency_s": 565.5213279579766,
-  "tokens": 8192
- },
- {
-  "run": "q35-exp20-thr08-gate27-39-r4",
-  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
   "question_id": 11308,
   "subject": "engineering",
   "pred": "D",
@@ -23018,18 +23162,6 @@
  {
   "run": "q35-exp20-thr08-gate27-39-r4",
   "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
-  "question_id": 11313,
-  "subject": "engineering",
-  "pred": "D",
-  "gold": "F",
-  "result": "wrong",
-  "truncated": true,
-  "latency_s": 583.4054774590768,
-  "tokens": 8192
- },
- {
-  "run": "q35-exp20-thr08-gate27-39-r4",
-  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
   "question_id": 11314,
   "subject": "engineering",
   "pred": "J",
@@ -23038,30 +23170,6 @@
   "truncated": false,
   "latency_s": 308.56020904215984,
   "tokens": 4907
- },
- {
-  "run": "q35-exp20-thr08-gate27-39-r4",
-  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
-  "question_id": 11315,
-  "subject": "engineering",
-  "pred": null,
-  "gold": "B",
-  "result": "trunc",
-  "truncated": true,
-  "latency_s": 567.7017897081096,
-  "tokens": 8192
- },
- {
-  "run": "q35-exp20-thr08-gate27-39-r4",
-  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
-  "question_id": 11316,
-  "subject": "engineering",
-  "pred": "C",
-  "gold": "C",
-  "result": "correct",
-  "truncated": true,
-  "latency_s": 591.6534707089886,
-  "tokens": 8192
  },
  {
   "run": "q35-exp20-thr08-gate27-39-r4",
@@ -23086,18 +23194,6 @@
   "truncated": false,
   "latency_s": 217.01900970796123,
   "tokens": 3734
- },
- {
-  "run": "q35-exp20-thr08-gate27-39-r4",
-  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
-  "question_id": 11319,
-  "subject": "engineering",
-  "pred": null,
-  "gold": "H",
-  "result": "trunc",
-  "truncated": true,
-  "latency_s": 563.9703485830687,
-  "tokens": 8192
  },
  {
   "run": "q35-exp20-thr08-gate27-39-r4",
@@ -23222,30 +23318,6 @@
  {
   "run": "q35-exp20-thr08-gate27-39-r4",
   "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
-  "question_id": 11330,
-  "subject": "engineering",
-  "pred": "F",
-  "gold": "F",
-  "result": "correct",
-  "truncated": true,
-  "latency_s": 581.7362417089753,
-  "tokens": 8192
- },
- {
-  "run": "q35-exp20-thr08-gate27-39-r4",
-  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
-  "question_id": 11331,
-  "subject": "engineering",
-  "pred": null,
-  "gold": "I",
-  "result": "trunc",
-  "truncated": true,
-  "latency_s": 570.7329771670047,
-  "tokens": 8192
- },
- {
-  "run": "q35-exp20-thr08-gate27-39-r4",
-  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
   "question_id": 11332,
   "subject": "engineering",
   "pred": "E",
@@ -23270,18 +23342,6 @@
  {
   "run": "q35-exp20-thr08-gate27-39-r4",
   "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
-  "question_id": 11334,
-  "subject": "engineering",
-  "pred": "A",
-  "gold": "A",
-  "result": "correct",
-  "truncated": true,
-  "latency_s": 563.6298109998461,
-  "tokens": 8192
- },
- {
-  "run": "q35-exp20-thr08-gate27-39-r4",
-  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
   "question_id": 11335,
   "subject": "engineering",
   "pred": "C",
@@ -23290,6 +23350,126 @@
   "truncated": false,
   "latency_s": 119.96293408307247,
   "tokens": 2189
+ },
+ {
+  "run": "q35-exp20-thr08-gate27-39-r4",
+  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
+  "question_id": 11296,
+  "subject": "engineering",
+  "pred": "A",
+  "gold": "I",
+  "result": "wrong",
+  "truncated": false,
+  "latency_s": 1291.0479533751495,
+  "tokens": 13008
+ },
+ {
+  "run": "q35-exp20-thr08-gate27-39-r4",
+  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
+  "question_id": 11306,
+  "subject": "engineering",
+  "pred": "E",
+  "gold": "A",
+  "result": "wrong",
+  "truncated": false,
+  "latency_s": 873.2174633750692,
+  "tokens": 9800
+ },
+ {
+  "run": "q35-exp20-thr08-gate27-39-r4",
+  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
+  "question_id": 11307,
+  "subject": "engineering",
+  "pred": "J",
+  "gold": "J",
+  "result": "correct",
+  "truncated": false,
+  "latency_s": 1187.1873847909737,
+  "tokens": 12526
+ },
+ {
+  "run": "q35-exp20-thr08-gate27-39-r4",
+  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
+  "question_id": 11313,
+  "subject": "engineering",
+  "pred": "D",
+  "gold": "F",
+  "result": "wrong",
+  "truncated": false,
+  "latency_s": 516.5220414998475,
+  "tokens": 6396
+ },
+ {
+  "run": "q35-exp20-thr08-gate27-39-r4",
+  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
+  "question_id": 11315,
+  "subject": "engineering",
+  "pred": "E",
+  "gold": "B",
+  "result": "wrong",
+  "truncated": false,
+  "latency_s": 631.8098763751332,
+  "tokens": 7780
+ },
+ {
+  "run": "q35-exp20-thr08-gate27-39-r4",
+  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
+  "question_id": 11316,
+  "subject": "engineering",
+  "pred": "C",
+  "gold": "C",
+  "result": "correct",
+  "truncated": false,
+  "latency_s": 1017.7558711671736,
+  "tokens": 10935
+ },
+ {
+  "run": "q35-exp20-thr08-gate27-39-r4",
+  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
+  "question_id": 11319,
+  "subject": "engineering",
+  "pred": "F",
+  "gold": "H",
+  "result": "wrong",
+  "truncated": false,
+  "latency_s": 589.4104396251496,
+  "tokens": 7414
+ },
+ {
+  "run": "q35-exp20-thr08-gate27-39-r4",
+  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
+  "question_id": 11330,
+  "subject": "engineering",
+  "pred": "F",
+  "gold": "F",
+  "result": "correct",
+  "truncated": false,
+  "latency_s": 676.0631146668456,
+  "tokens": 8155
+ },
+ {
+  "run": "q35-exp20-thr08-gate27-39-r4",
+  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
+  "question_id": 11331,
+  "subject": "engineering",
+  "pred": "I",
+  "gold": "I",
+  "result": "correct",
+  "truncated": false,
+  "latency_s": 613.9389089168981,
+  "tokens": 7592
+ },
+ {
+  "run": "q35-exp20-thr08-gate27-39-r4",
+  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
+  "question_id": 11334,
+  "subject": "engineering",
+  "pred": "A",
+  "gold": "A",
+  "result": "correct",
+  "truncated": false,
+  "latency_s": 514.3552316669375,
+  "tokens": 6580
  },
  {
   "run": "q35-exp20-thr08-gate27-39-r4",
@@ -24242,18 +24422,6 @@
  {
   "run": "q35-exp20-thr08-gate27-39-r4",
   "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
-  "question_id": 10385,
-  "subject": "computer science",
-  "pred": null,
-  "gold": "D",
-  "result": "trunc",
-  "truncated": true,
-  "latency_s": 576.3456409999635,
-  "tokens": 8192
- },
- {
-  "run": "q35-exp20-thr08-gate27-39-r4",
-  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
   "question_id": 10386,
   "subject": "computer science",
   "pred": "I",
@@ -24422,18 +24590,6 @@
  {
   "run": "q35-exp20-thr08-gate27-39-r4",
   "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
-  "question_id": 10401,
-  "subject": "computer science",
-  "pred": "E",
-  "gold": "E",
-  "result": "correct",
-  "truncated": true,
-  "latency_s": 567.6118217918556,
-  "tokens": 8192
- },
- {
-  "run": "q35-exp20-thr08-gate27-39-r4",
-  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
   "question_id": 10402,
   "subject": "computer science",
   "pred": "C",
@@ -24514,5 +24670,29 @@
   "truncated": false,
   "latency_s": 82.80121133406647,
   "tokens": 1460
+ },
+ {
+  "run": "q35-exp20-thr08-gate27-39-r4",
+  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
+  "question_id": 10385,
+  "subject": "computer science",
+  "pred": "D",
+  "gold": "D",
+  "result": "correct",
+  "truncated": false,
+  "latency_s": 277.06809129100293,
+  "tokens": 3722
+ },
+ {
+  "run": "q35-exp20-thr08-gate27-39-r4",
+  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
+  "question_id": 10401,
+  "subject": "computer science",
+  "pred": "E",
+  "gold": "E",
+  "result": "correct",
+  "truncated": false,
+  "latency_s": 281.8089867909439,
+  "tokens": 3981
  }
 ]
