@@ -1,6 +1,17 @@
 {
  "run": "q35-default8-gpqa",
  "model": "Qwen 3.6 35B A3B (reference implementation)",
+ "generation_config": {
+  "temperature": 0.0,
+  "top_p": 1.0,
+  "seed": 42,
+  "few_shot": 0,
+  "max_tokens_requested": 61440,
+  "server_ctx": 65536,
+  "eval_batch_size": 1,
+  "decoding": "serial",
+  "note": "max_tokens effective per call was 8192/30720/61440 across the 8K->30K->60K escalation; a row's budget is recoverable from output_tokens when truncated"
+ },
  "question_id": 108,
  "domain": "physics",
  "question": "Consider a bound system of two nucleons (NN) in a 1S0 state which emit a particle X of intrinsic parity -1. Pauli statistics require that the isospin, angular momentum, and spin quantum numbers of the final NN state satisfy T(NN) = S(NN) + L(NN) + 1 (mod 2).\n\nSuppose the final NN state has T(NN) = 0. Which of the following partial waves is not permitted, where the lowercase letter denotes the angular momentum state of X? Make use of the conservation of both angular momentum and parity.\n\nNote that the term symbol (e.g. 1S0) is in general defined (2S+1)L(J), where S is the total spin, L the total orbital angular momentum written in spectroscopic notation, and J the total angular momentum.",

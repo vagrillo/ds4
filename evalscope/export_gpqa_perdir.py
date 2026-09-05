@@ -11,9 +11,26 @@ from gpqa_adapter_local import gold_map
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUTROOT = os.path.join(os.path.dirname(HERE), "gpqa-diamond")
 RUNS = [
-    ("gpqa-def8", "q35-default8-gpqa"),
-    ("gpqa-gate39", "q35-exp20-thr08-gate27-39-gpqa"),
+    ("gpqa-def8", "q35-default8-gpqa", {}),
+    ("gpqa-gate39", "q35-exp20-thr08-gate27-39-gpqa",
+     {"q35_experts": 20, "q35_expert_threshold": 0.8,
+      "env_DS4_METAL_QWEN35_SOURCE": "metal/qwen35_lay_last.metal"}),
 ]
+# generation params are identical across runs (paired benchmark, temp 0);
+# seed from evalscope task_config.yaml, rest from the run scripts
+GEN_PARAMS = {
+    "temperature": 0.0,
+    "top_p": 1.0,
+    "seed": 42,
+    "few_shot": 0,
+    "max_tokens_requested": 61440,
+    "server_ctx": 65536,
+    "eval_batch_size": 1,
+    "decoding": "serial",
+    "note": "max_tokens effective per call was 8192/30720/61440 across the "
+            "8K->30K->60K escalation; a row's budget is recoverable from "
+            "output_tokens when truncated",
+}
 
 
 def parse_row(r):
@@ -62,7 +79,7 @@ def main():
         row = json.loads(line)
         data[row["id"]] = row
     n = 0
-    for wd, mid in RUNS:
+    for wd, mid, extra in RUNS:
         outdir = os.path.join(OUTROOT, mid)
         os.makedirs(outdir, exist_ok=True)
         for f in glob.glob(os.path.join(HERE, wd, "predictions", mid, "*.jsonl")):
@@ -99,6 +116,7 @@ def main():
                     "run": mid,
                     "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)"
                     if "gate" in mid else "Qwen 3.6 35B A3B (reference implementation)",
+                    "generation_config": {**GEN_PARAMS, **extra},
                     "question_id": qid,
                     "domain": dom,
                     "question": row.get("question", ""),

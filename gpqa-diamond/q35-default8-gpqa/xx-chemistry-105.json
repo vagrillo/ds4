@@ -1,6 +1,17 @@
 {
  "run": "q35-default8-gpqa",
  "model": "Qwen 3.6 35B A3B (reference implementation)",
+ "generation_config": {
+  "temperature": 0.0,
+  "top_p": 1.0,
+  "seed": 42,
+  "few_shot": 0,
+  "max_tokens_requested": 61440,
+  "server_ctx": 65536,
+  "eval_batch_size": 1,
+  "decoding": "serial",
+  "note": "max_tokens effective per call was 8192/30720/61440 across the 8K->30K->60K escalation; a row's budget is recoverable from output_tokens when truncated"
+ },
  "question_id": 105,
  "domain": "chemistry",
  "question": "The reaction between cyclohexanone and piperidine can result in the formation of a cyclic imine, also known as a Schiff base. This type of reaction is a classic example of imine formation, which involves the condensation of a ketone (cyclohexanone in this case) with a primary amine (piperidine) in the presence of an acid catalyst.\nWhat will be the favorable acid used (A) and the final product (B) of the following reaction?\nCyclohexanone + piperidine + (A, acrylaldehyde, H3O+) ---> B",

@@ -1,6 +1,17 @@
 {
  "run": "q35-default8-gpqa",
  "model": "Qwen 3.6 35B A3B (reference implementation)",
+ "generation_config": {
+  "temperature": 0.0,
+  "top_p": 1.0,
+  "seed": 42,
+  "few_shot": 0,
+  "max_tokens_requested": 61440,
+  "server_ctx": 65536,
+  "eval_batch_size": 1,
+  "decoding": "serial",
+  "note": "max_tokens effective per call was 8192/30720/61440 across the 8K->30K->60K escalation; a row's budget is recoverable from output_tokens when truncated"
+ },
  "question_id": 62,
  "domain": "physics",
  "question": "Let there be a diatomic molecule, with elements X and Y, that can be modeled using the quantum rotation-vibration model (or non-rigid rotor model). If the molecule is in its fundamental state, what momentum should an absorbed photon have, in order for the molecule to switch to the next state with the lowest possible energy?\nMx: mass of atom X = 20 amu\nMy: mass of atom Y = 2 amu\nR: molecular bond length = 2 angstroms\nw: angular frequency of vibration = 4*10^14 rad/s",

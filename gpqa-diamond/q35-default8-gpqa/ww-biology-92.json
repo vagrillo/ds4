@@ -1,6 +1,17 @@
 {
  "run": "q35-default8-gpqa",
  "model": "Qwen 3.6 35B A3B (reference implementation)",
+ "generation_config": {
+  "temperature": 0.0,
+  "top_p": 1.0,
+  "seed": 42,
+  "few_shot": 0,
+  "max_tokens_requested": 61440,
+  "server_ctx": 65536,
+  "eval_batch_size": 1,
+  "decoding": "serial",
+  "note": "max_tokens effective per call was 8192/30720/61440 across the 8K->30K->60K escalation; a row's budget is recoverable from output_tokens when truncated"
+ },
  "question_id": 92,
  "domain": "biology",
  "question": "\"Scientist aims to run quantitative polymerase chain reaction (qPCR) on some samples. He first wants to make a calibration curve so he took positive control with known copy numbers and run qPCR on serially diluted positive control three technical replicates. The efficiency of qPCR was 100%. The R2 was 1, and the slope was -3.3. His results were as follows:\nAt the concentration of 100000 copies per µl, ct of triplicate results were 33.9, 34.2, 34.5.\nAt the concentration of 10000 copies per µl, ct of triplicate results were 30.6, 30.9, 31.2.\nAt the concentration of 1000 copies per µl, ct of triplicate results were 27.3, 27.6, 27.9.\nAt the concentration of 100 copies per µl, ct of triplicate results were 24, 24.3, 24.6.\nAt the concentration of 10 copies per µl, ct of triplicate results were 20.7, 21, 21.3\nWhich of the following explains the discrepancies in his results?",

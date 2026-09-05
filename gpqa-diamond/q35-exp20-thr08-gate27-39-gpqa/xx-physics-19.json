@@ -1,6 +1,20 @@
 {
  "run": "q35-exp20-thr08-gate27-39-gpqa",
  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
+ "generation_config": {
+  "temperature": 0.0,
+  "top_p": 1.0,
+  "seed": 42,
+  "few_shot": 0,
+  "max_tokens_requested": 61440,
+  "server_ctx": 65536,
+  "eval_batch_size": 1,
+  "decoding": "serial",
+  "note": "max_tokens effective per call was 8192/30720/61440 across the 8K->30K->60K escalation; a row's budget is recoverable from output_tokens when truncated",
+  "q35_experts": 20,
+  "q35_expert_threshold": 0.8,
+  "env_DS4_METAL_QWEN35_SOURCE": "metal/qwen35_lay_last.metal"
+ },
  "question_id": 19,
  "domain": "physics",
  "question": "A common approximation made in many-body nuclear calculations of some interaction (for example an electroweak interaction) is to suppose that nucleons in a nucleus behave in the same way as free nucleons. Which of the following four assumptions jointly imply this \"\"impulse\"\" approximation?\n\n1. The interaction current only interacts with individual nucleons.\n2. The nucleus is transparent apart from the selected nucleon.\n3. The quarks internal to the selected nucleon are non-relativistic.\n4. The interaction proceeds as if the selected nucleon experiences no binding forces.",

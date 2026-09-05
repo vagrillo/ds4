@@ -1,6 +1,17 @@
 {
  "run": "q35-default8-gpqa",
  "model": "Qwen 3.6 35B A3B (reference implementation)",
+ "generation_config": {
+  "temperature": 0.0,
+  "top_p": 1.0,
+  "seed": 42,
+  "few_shot": 0,
+  "max_tokens_requested": 61440,
+  "server_ctx": 65536,
+  "eval_batch_size": 1,
+  "decoding": "serial",
+  "note": "max_tokens effective per call was 8192/30720/61440 across the 8K->30K->60K escalation; a row's budget is recoverable from output_tokens when truncated"
+ },
  "question_id": 164,
  "domain": "chemistry",
  "question": "In an industrial research lab, a scientist performs ethylene polymerization with a homogeneous organometallic catalyst system, generating a polymer of high density. He intends to add a second catalyst system to introduce regular branches in the polymer backbone, also only using ethylene as the reactant. He consults a senior scientist, who gives the following statements. “Such combined systems are already implemented on an industrial scale in the US. One can use a catalyst of a group VIa transition metal in combination with specific activators. Aluminum-based activators do not work for the essential additional reaction step. Certain noble metal catalysts can be used but are too expensive.”\nWhich of these four statements is correct regarding the formation of a polymer with regular branches using only ethylene as the monomer and a dual catalyst system?",

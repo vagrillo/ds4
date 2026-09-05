@@ -1,6 +1,20 @@
 {
  "run": "q35-exp20-thr08-gate27-39-gpqa",
  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
+ "generation_config": {
+  "temperature": 0.0,
+  "top_p": 1.0,
+  "seed": 42,
+  "few_shot": 0,
+  "max_tokens_requested": 61440,
+  "server_ctx": 65536,
+  "eval_batch_size": 1,
+  "decoding": "serial",
+  "note": "max_tokens effective per call was 8192/30720/61440 across the 8K->30K->60K escalation; a row's budget is recoverable from output_tokens when truncated",
+  "q35_experts": 20,
+  "q35_expert_threshold": 0.8,
+  "env_DS4_METAL_QWEN35_SOURCE": "metal/qwen35_lay_last.metal"
+ },
  "question_id": 157,
  "domain": "biology",
  "question": "In an inactive state, a transcription factor subunit awaits an activation signal from the membrane phosphorylation cascade. Upon phosphorylation on the Ser residues in the transactivation domain, it dimerizes, shuttles into the nucleus, and serves in gene transcription. A missense mutation X in the transactivation domain is a recessive loss-of-function mutation. You observe that a heterozygous mutation Y in the dimerization domain acts as a dominant-negative mutation. Which of the following molecular phenotypes is most likely observed in the presence of mutation Y?",

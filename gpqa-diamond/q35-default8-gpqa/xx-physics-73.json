@@ -1,6 +1,17 @@
 {
  "run": "q35-default8-gpqa",
  "model": "Qwen 3.6 35B A3B (reference implementation)",
+ "generation_config": {
+  "temperature": 0.0,
+  "top_p": 1.0,
+  "seed": 42,
+  "few_shot": 0,
+  "max_tokens_requested": 61440,
+  "server_ctx": 65536,
+  "eval_batch_size": 1,
+  "decoding": "serial",
+  "note": "max_tokens effective per call was 8192/30720/61440 across the 8K->30K->60K escalation; a row's budget is recoverable from output_tokens when truncated"
+ },
  "question_id": 73,
  "domain": "physics",
  "question": "We want to observe a decay of a single atom (atomic nucleus). It is possible to obtain this atom (e.g., from a beta decay of another atom) and start monitoring right away. We know from previous experiments that the decay probability of this atom is 32% within 100 minutes.\nSo far, 50 minutes have passed and the atom has not decayed. What is the probability it will decay in the next 150 minutes?",

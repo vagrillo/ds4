@@ -1,6 +1,17 @@
 {
  "run": "q35-default8-gpqa",
  "model": "Qwen 3.6 35B A3B (reference implementation)",
+ "generation_config": {
+  "temperature": 0.0,
+  "top_p": 1.0,
+  "seed": 42,
+  "few_shot": 0,
+  "max_tokens_requested": 61440,
+  "server_ctx": 65536,
+  "eval_batch_size": 1,
+  "decoding": "serial",
+  "note": "max_tokens effective per call was 8192/30720/61440 across the 8K->30K->60K escalation; a row's budget is recoverable from output_tokens when truncated"
+ },
  "question_id": 78,
  "domain": "chemistry",
  "question": "In an experiment, compound X (C11H12O) was subjected to a reaction with 1,4-diazabicyclo[2.2.2]octane in nonpolar solvent at a temperature of 403 K for a duration of 1 day. The theoretical 1H-NMR and 13C-NMR spectra of the resulting product reveal the following signal patterns.\n1H NMR: δ 2.28 (3H, s), 2.31 (3H, s), 6.75 (1H, d), 7.08 (2H, d), 7.68 (1H, d), 7.71 (2H, d).\n13C NMR: δ 21.3 (1C, s), 28.4 (1C, s), 126.9 (2C, s), 127.1 (1C, s), 129.1 (2C, s), 130.3 (1C, s), 141.5 (1C, s), 144.1 (1C, s), 197.7 (1C, s).\nIdentify Compound X.",

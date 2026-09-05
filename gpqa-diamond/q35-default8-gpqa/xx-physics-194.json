@@ -1,6 +1,17 @@
 {
  "run": "q35-default8-gpqa",
  "model": "Qwen 3.6 35B A3B (reference implementation)",
+ "generation_config": {
+  "temperature": 0.0,
+  "top_p": 1.0,
+  "seed": 42,
+  "few_shot": 0,
+  "max_tokens_requested": 61440,
+  "server_ctx": 65536,
+  "eval_batch_size": 1,
+  "decoding": "serial",
+  "note": "max_tokens effective per call was 8192/30720/61440 across the 8K->30K->60K escalation; a row's budget is recoverable from output_tokens when truncated"
+ },
  "question_id": 194,
  "domain": "physics",
  "question": "Astronomers are observing a planet with a radius of 1 Earth radius in a circular orbit, with a transit impact parameter of 0.2, around a star that has a radius 1.5 times that of the Sun. This planet has an orbital period of 3 days. What is the maximum orbital period of a second planet, with a radius of 2.5 times that of Earth, in the same system that will exhibit both transit and occultation events? Assume that the second planet also has a circular orbit and shares the same orbital plane as the previously mentioned transiting planet.",

@@ -1,6 +1,20 @@
 {
  "run": "q35-exp20-thr08-gate27-39-gpqa",
  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
+ "generation_config": {
+  "temperature": 0.0,
+  "top_p": 1.0,
+  "seed": 42,
+  "few_shot": 0,
+  "max_tokens_requested": 61440,
+  "server_ctx": 65536,
+  "eval_batch_size": 1,
+  "decoding": "serial",
+  "note": "max_tokens effective per call was 8192/30720/61440 across the 8K->30K->60K escalation; a row's budget is recoverable from output_tokens when truncated",
+  "q35_experts": 20,
+  "q35_expert_threshold": 0.8,
+  "env_DS4_METAL_QWEN35_SOURCE": "metal/qwen35_lay_last.metal"
+ },
  "question_id": 7,
  "domain": "biology",
  "question": "You perform a high-throughput experiment on white lupine to find genes contributing to resistance to the fungal disease anthracnose. As a result, you receive three candidate genes of unknown function – G1, G2, and G3. You create three knock-out mutants, g1, g2, and g3, and a set of double-mutants, g1g2, g1g3, and g2g3. You know that at least one of these genes is a transcription factor acting upstream of (an)other gene(s). You start to test those mutant plants: do they have a higher sensitivity to anthracnose than the wild-type because they cannot produce certain gene products? \nAfter tests with the pathogen, you receive the following results where 100% is the level of resistance to the pathogen in control; 50% is half of the control’s resistance; 25% is a quarter of the control’s resistance; 0% ‒ all plants show signs of infection:\n- resistance of g1: 75% of control\n- resistance of g2: 0% from control\n- resistance of g3: 50% from control\n-resistance of g1g3: 10% from control\n- resistance of g2g3: 0% from control\n- resistance of g1g2: 0% from control\n\nWhich conclusion regarding those genes' interaction can you draw from this experiment?",

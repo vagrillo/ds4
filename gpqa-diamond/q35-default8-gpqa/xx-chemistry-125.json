@@ -1,6 +1,17 @@
 {
  "run": "q35-default8-gpqa",
  "model": "Qwen 3.6 35B A3B (reference implementation)",
+ "generation_config": {
+  "temperature": 0.0,
+  "top_p": 1.0,
+  "seed": 42,
+  "few_shot": 0,
+  "max_tokens_requested": 61440,
+  "server_ctx": 65536,
+  "eval_batch_size": 1,
+  "decoding": "serial",
+  "note": "max_tokens effective per call was 8192/30720/61440 across the 8K->30K->60K escalation; a row's budget is recoverable from output_tokens when truncated"
+ },
  "question_id": 125,
  "domain": "chemistry",
  "question": "An organic chemist performs two reactions.\nReaction I:\n(S)-5-methoxyhexan-3-one is treated with LAH followed by an acidic workup.\nReaction II:\nPentane-2,4-dione is treated with excess NaBH4 followed by an acidic workup.\nThe progress of the reactions is monitored using TLC. After the reactions are 100% completed, the products from both reactions are combined, and run on both a normal-phase HPLC column and an HPLC column packed with the chiral stationary phase.\nHow many peaks does the chemist observe in the chromatograms?",

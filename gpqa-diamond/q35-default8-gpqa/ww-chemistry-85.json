@@ -1,6 +1,17 @@
 {
  "run": "q35-default8-gpqa",
  "model": "Qwen 3.6 35B A3B (reference implementation)",
+ "generation_config": {
+  "temperature": 0.0,
+  "top_p": 1.0,
+  "seed": 42,
+  "few_shot": 0,
+  "max_tokens_requested": 61440,
+  "server_ctx": 65536,
+  "eval_batch_size": 1,
+  "decoding": "serial",
+  "note": "max_tokens effective per call was 8192/30720/61440 across the 8K->30K->60K escalation; a row's budget is recoverable from output_tokens when truncated"
+ },
  "question_id": 85,
  "domain": "chemistry",
  "question": "A chemist performed two reactions by taking two unknown compounds and treated them separately with two different reducing agents. Select the proper starting material for both of the reactions.\nA + LiBH4 + H+ ---> (R)-4-ethyltetrahydro-2H-pyran-2-one\nB + BH3 + H+ ---> (S)-4-ethyltetrahydro-2H-pyran-2-one",

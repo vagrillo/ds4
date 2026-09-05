@@ -1,6 +1,17 @@
 {
  "run": "q35-default8-gpqa",
  "model": "Qwen 3.6 35B A3B (reference implementation)",
+ "generation_config": {
+  "temperature": 0.0,
+  "top_p": 1.0,
+  "seed": 42,
+  "few_shot": 0,
+  "max_tokens_requested": 61440,
+  "server_ctx": 65536,
+  "eval_batch_size": 1,
+  "decoding": "serial",
+  "note": "max_tokens effective per call was 8192/30720/61440 across the 8K->30K->60K escalation; a row's budget is recoverable from output_tokens when truncated"
+ },
  "question_id": 189,
  "domain": "chemistry",
  "question": "The reaction of an electron pair donor, nucleophile (Nu) with an electron pair acceptor is called nucleophilic substitution reaction. An sp3-hybridized electrophile needs to have a leaving group to proceed with the reaction. Substitution reactions have the following two types. One is SN1 and the other is the SN2 reaction. In contrast to the substitution reaction, the elimination reaction involves the removal of a pair or groups of atoms from a molecule. These are chemical reactions in which single carbon-carbon bonded organic compounds are converted to compounds containing double/triple bonds (unsaturated compounds).\nArrange the following nucleophiles more reactive to the poorest reactive in the aqueous solution.\n\n1. 4-methylcyclohexan-1-olate\n2. Hydroxide\n3. Propionate\n4. Methanol\n5. Ethanethiolate",

@@ -1,6 +1,20 @@
 {
  "run": "q35-exp20-thr08-gate27-39-gpqa",
  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
+ "generation_config": {
+  "temperature": 0.0,
+  "top_p": 1.0,
+  "seed": 42,
+  "few_shot": 0,
+  "max_tokens_requested": 61440,
+  "server_ctx": 65536,
+  "eval_batch_size": 1,
+  "decoding": "serial",
+  "note": "max_tokens effective per call was 8192/30720/61440 across the 8K->30K->60K escalation; a row's budget is recoverable from output_tokens when truncated",
+  "q35_experts": 20,
+  "q35_expert_threshold": 0.8,
+  "env_DS4_METAL_QWEN35_SOURCE": "metal/qwen35_lay_last.metal"
+ },
  "question_id": 14,
  "domain": "physics",
  "question": "Researchers are attempting to detect transits of two Earth-like planets: Planet_1 and Planet_2. They have limited observing time and want to observe the one that has the highest probability of transiting. Both of these planets have already been detected via the RV method, allowing us to know their minimum masses and orbital periods. Although both planets share the same masses, the orbital period of Planet_1 is three times shorter than that of Planet_2. Interestingly, they both have circular orbits. Furthermore, we know the masses and radii of the host stars of these two planets. The star hosting Planet_1 has a mass that is twice that of the host star of Planet_2. As the host of Planet_2 is slightly evolved, both host stars have the same radii. Based on the provided information, the researchers have chosen to observe:",

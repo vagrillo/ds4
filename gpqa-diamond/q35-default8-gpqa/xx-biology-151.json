@@ -1,6 +1,17 @@
 {
  "run": "q35-default8-gpqa",
  "model": "Qwen 3.6 35B A3B (reference implementation)",
+ "generation_config": {
+  "temperature": 0.0,
+  "top_p": 1.0,
+  "seed": 42,
+  "few_shot": 0,
+  "max_tokens_requested": 61440,
+  "server_ctx": 65536,
+  "eval_batch_size": 1,
+  "decoding": "serial",
+  "note": "max_tokens effective per call was 8192/30720/61440 across the 8K->30K->60K escalation; a row's budget is recoverable from output_tokens when truncated"
+ },
  "question_id": 151,
  "domain": "biology",
  "question": "You identified a new quorum-sensing peptide in the bacteria Lactobacillus acidophilus. You are highly interested if its role in intercellular communication is conserved among the eukaryotes. You treat yeast Saccharomyces cerevisiae with the peptide and interestingly observe the formation of the shmoo. You want to learn about the proteome of the active chromatin in the shmoo and recover it by chromatin immunoprecipitation followed by mass spectrometry. The least of proteins from which complex below will you observe in your assay?",

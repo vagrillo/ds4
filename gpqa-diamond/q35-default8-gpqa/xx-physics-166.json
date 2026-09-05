@@ -1,6 +1,17 @@
 {
  "run": "q35-default8-gpqa",
  "model": "Qwen 3.6 35B A3B (reference implementation)",
+ "generation_config": {
+  "temperature": 0.0,
+  "top_p": 1.0,
+  "seed": 42,
+  "few_shot": 0,
+  "max_tokens_requested": 61440,
+  "server_ctx": 65536,
+  "eval_batch_size": 1,
+  "decoding": "serial",
+  "note": "max_tokens effective per call was 8192/30720/61440 across the 8K->30K->60K escalation; a row's budget is recoverable from output_tokens when truncated"
+ },
  "question_id": 166,
  "domain": "physics",
  "question": "Calculate the amount of non-Gaussianity(nG) in the Schrödinger cat state using relative entropy measure. The state is defined as,\n|psi> =( cos(phi)|alpha> + sin(phi)|-alpha> )/ N;\nHere, alpha is the amplitude, phi is the phase and N is the normalisation constant.\nN = sqrt(1+ sin(2*phi)*exp(-2*alpha^2)).\nThe relative entropy measure is given as,\ndel_b = [trace(rho* ln(rho))-trace(tau* ln(tau))]\nwhere tau is the density matrix of a reference Gaussian state and rho is the density matrix of the above non-Gaussian state.\nCalculate the nG for phi =-pi /4 and alpha= 0.5.",

@@ -1,6 +1,20 @@
 {
  "run": "q35-exp20-thr08-gate27-39-gpqa",
  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
+ "generation_config": {
+  "temperature": 0.0,
+  "top_p": 1.0,
+  "seed": 42,
+  "few_shot": 0,
+  "max_tokens_requested": 61440,
+  "server_ctx": 65536,
+  "eval_batch_size": 1,
+  "decoding": "serial",
+  "note": "max_tokens effective per call was 8192/30720/61440 across the 8K->30K->60K escalation; a row's budget is recoverable from output_tokens when truncated",
+  "q35_experts": 20,
+  "q35_expert_threshold": 0.8,
+  "env_DS4_METAL_QWEN35_SOURCE": "metal/qwen35_lay_last.metal"
+ },
  "question_id": 175,
  "domain": "physics",
  "question": "The state of a system at time t is given by the column matrix having elements (-1, 2, 1), and the operators of two observables P and Q of the system are represented by two square matrices. The matrix corresponding to operator P has the elements in first row as (0, 1/ \\sqrt{2}, 0), elements in the second row as (1/ \\sqrt{2}, 0, 1/ \\sqrt{2}) and that in third row as (0, 1/ \\sqrt{2}, 0). The matrix operator for Q is represented by the square matrix having elements in the first row as (1, 0, 0), second row as (0, 0, 0) and third row as (0, 0, -1). Now, if someone measures Q just after the measurement of P, what is the probability of getting 0 for P and -1 for Q in the respective measurements?",

@@ -1,6 +1,17 @@
 {
  "run": "q35-default8-gpqa",
  "model": "Qwen 3.6 35B A3B (reference implementation)",
+ "generation_config": {
+  "temperature": 0.0,
+  "top_p": 1.0,
+  "seed": 42,
+  "few_shot": 0,
+  "max_tokens_requested": 61440,
+  "server_ctx": 65536,
+  "eval_batch_size": 1,
+  "decoding": "serial",
+  "note": "max_tokens effective per call was 8192/30720/61440 across the 8K->30K->60K escalation; a row's budget is recoverable from output_tokens when truncated"
+ },
  "question_id": 165,
  "domain": "physics",
  "question": "Consider the extension of the Standard Model given by the following Lagrangian\n\n\\mathcal{L}\\subset i\\bar{N}_{R}\\gamma^{\\mu}\\partial_{\\mu}N_{R}+\\frac{1}{2}\\left(\\partial^{\\mu}\\phi\\right)^{2}+\\left|D^{\\mu}S\\right|^{2}-\\frac{y_{i}}{2}\\phi\\bar{N}_{iR}^{c}N_{iR}^{c}-g_{i\\alpha}\\bar{N}_{iR}L_{\\alpha}S-V\\left(\\phi,S,H\\right)\nwith singlet fermions,$N{iR}\\sim\\left(1,1,0\\right)$, scalar-doublet $S\\sim\\left(1,2,1\\right)$, and singlet scalar $\\phi\\sim\\left(1,1,0\\right)$. We give $\\left\\langle \\phi\\right\\rangle ^{2}=\\left(x^{2}+\\upsilon^{2}\\right)$, where $\\left\\langle \\phi\\right\\rangle =x$ and $\\left\\langle h\\right\\rangle =v$.\n\nWhat is the approximation of the mass of the pseudo-Goldostone boson $H_{2}$ through radiative corrections?",

@@ -1,6 +1,20 @@
 {
  "run": "q35-exp20-thr08-gate27-39-gpqa",
  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
+ "generation_config": {
+  "temperature": 0.0,
+  "top_p": 1.0,
+  "seed": 42,
+  "few_shot": 0,
+  "max_tokens_requested": 61440,
+  "server_ctx": 65536,
+  "eval_batch_size": 1,
+  "decoding": "serial",
+  "note": "max_tokens effective per call was 8192/30720/61440 across the 8K->30K->60K escalation; a row's budget is recoverable from output_tokens when truncated",
+  "q35_experts": 20,
+  "q35_expert_threshold": 0.8,
+  "env_DS4_METAL_QWEN35_SOURCE": "metal/qwen35_lay_last.metal"
+ },
  "question_id": 171,
  "domain": "physics",
  "question": "Two stars are being studied. It has been observed that iron atoms in the photosphere of star_1 are twice as excited in a specific energy level when compared to the iron atoms in star_2. In fact, the energy difference between the considered energy levels was determined to be approximately 1.38 x 10^(-23) J. Assuming that the stellar photospheres are in LTE, which of these equations for the effective temperatures of the stars (T_1 and T_2) is correct?",

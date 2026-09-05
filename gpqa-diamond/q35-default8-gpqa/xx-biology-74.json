@@ -1,6 +1,17 @@
 {
  "run": "q35-default8-gpqa",
  "model": "Qwen 3.6 35B A3B (reference implementation)",
+ "generation_config": {
+  "temperature": 0.0,
+  "top_p": 1.0,
+  "seed": 42,
+  "few_shot": 0,
+  "max_tokens_requested": 61440,
+  "server_ctx": 65536,
+  "eval_batch_size": 1,
+  "decoding": "serial",
+  "note": "max_tokens effective per call was 8192/30720/61440 across the 8K->30K->60K escalation; a row's budget is recoverable from output_tokens when truncated"
+ },
  "question_id": 74,
  "domain": "biology",
  "question": "You want to study the role of the GADD45G protein in a mouse model. You are highly interested in whether the IL-2-induced protein has a role in the SARS-CoV-2 infection. You decide to create a transgenic mouse model with the inducible overexpression of the coding sequence for the GADD45G gene. You can use it to affinity-purify the protein and identify the protein partners that bind to GADD45G after you infect the mice with the virus. For that purpose, you will modify the gene's coding sequence by introducing the sequence for a single influenza hemagglutinin antigenic determinant that will be at the N-terminus of your recombinant protein. You genetically engineer the plasmid and, aided by Lipofectamine®, transfect it into the Chinese hamster ovary cells. You select the antibiotic-resistant cell colonies to test the expression level of your construct. Once you begin, you observe that you are unable to overexpress your protein as you expected. In the series of tests you undertake to identify the cause, you realize that the sequence of the plus strand of your construct reads:\n\n\n5'ATGTACCCATACGATGTTCCAGATTACGCCAAATGACTCTGGAAGAAGTCCGCGGCCAGGACACAGTTCCGGAAAGCACAGCCAGGATGCAGGGTGCCGGGAAAGCGCTGCATGAGTTGCTGCTGTCGGCGCAGCGTCAGGGCTGCCTCACTGCCGGCGTCTACGAGTCAGCCAAAGTCTTGAACGTGGACCCCGACAATGTGACCTTCTGTGTGCTGGCTGCGGGTGAGGAGGACGAGGGCGACATCGCGCTGCAGATCCATTTTACGCTGATCCAGGCTTTCTGCTGCGAGAACGACATCGACATAGTGCGCGTGGGCGATGTGCAGCGGCTGGCGGCTATCGTGGGCGCCGGCGAGGAGGCGGGTGCGCCGGGCGACCTGCACTGCATCCTCATTTCGAACCCCAACGAGGACGCCTGGAAGGATCCCGCCTTGGAGAAGCTCAGCCTGTTTTGCGAGGAGAGCCGCAGCGTTAACGACTGGGTGCCCAGCATCACCCTCCCCGAGTGA3'\n\nYou annoyingly notice the reason.",

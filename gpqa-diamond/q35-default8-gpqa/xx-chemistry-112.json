@@ -1,6 +1,17 @@
 {
  "run": "q35-default8-gpqa",
  "model": "Qwen 3.6 35B A3B (reference implementation)",
+ "generation_config": {
+  "temperature": 0.0,
+  "top_p": 1.0,
+  "seed": 42,
+  "few_shot": 0,
+  "max_tokens_requested": 61440,
+  "server_ctx": 65536,
+  "eval_batch_size": 1,
+  "decoding": "serial",
+  "note": "max_tokens effective per call was 8192/30720/61440 across the 8K->30K->60K escalation; a row's budget is recoverable from output_tokens when truncated"
+ },
  "question_id": 112,
  "domain": "chemistry",
  "question": "You have prepared an unknown compound. To identify the product, you have used the following characterisation techniques: FTIR, 1H NMR, and Mass Spectrometry. The FTIR spectrum shows a very broad absorption peak at 3000 wavenumbers. Two other strong absorption peaks are observed at 1700 and 1650 wavenumbers. Several peaks were observed in the 1H NMR spectrum including peaks corresponding to vinyl-hydrogens. The mass spectrum shows a fragment peak at m/z = 45. Identify the chemical formula of this unknown compound as either C6H12O, C6H10O, C6H10O2, or C6H12O2.",

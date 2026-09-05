@@ -1,6 +1,17 @@
 {
  "run": "q35-default8-gpqa",
  "model": "Qwen 3.6 35B A3B (reference implementation)",
+ "generation_config": {
+  "temperature": 0.0,
+  "top_p": 1.0,
+  "seed": 42,
+  "few_shot": 0,
+  "max_tokens_requested": 61440,
+  "server_ctx": 65536,
+  "eval_batch_size": 1,
+  "decoding": "serial",
+  "note": "max_tokens effective per call was 8192/30720/61440 across the 8K->30K->60K escalation; a row's budget is recoverable from output_tokens when truncated"
+ },
  "question_id": 106,
  "domain": "biology",
  "question": "Imagine a situation where a novel natural molecule, Xantheraquin, is discovered and is being investigated for in silico testing against a bacterial pathogen that is multidrug resistant. Preliminary studies indicate that Xantheraquin has multiple chiral centers and can exist in various tautomeric forms. Which of the following steps would be the MOST crucial before proceeding with in silico docking studies, given the complexities of bioinformatics in structure-based drug discovery, ?",

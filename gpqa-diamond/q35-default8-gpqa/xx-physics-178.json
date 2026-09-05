@@ -1,6 +1,17 @@
 {
  "run": "q35-default8-gpqa",
  "model": "Qwen 3.6 35B A3B (reference implementation)",
+ "generation_config": {
+  "temperature": 0.0,
+  "top_p": 1.0,
+  "seed": 42,
+  "few_shot": 0,
+  "max_tokens_requested": 61440,
+  "server_ctx": 65536,
+  "eval_batch_size": 1,
+  "decoding": "serial",
+  "note": "max_tokens effective per call was 8192/30720/61440 across the 8K->30K->60K escalation; a row's budget is recoverable from output_tokens when truncated"
+ },
  "question_id": 178,
  "domain": "physics",
  "question": "The study of quantum mechanics deals with a lot of matrices. Consider the following matrices. \n\nW = (0, 0, 1; 0, 1, 0; 1, 0, 0), \nX = (i, -1, 2i; 1, 0, 1;  2i, -1, -i),\nY = (0.5, 0.1, 0.2; 0.1, 0.25, 0.1; 0.2, 0.1, 0.25)\nZ - (3, 2i, 5; -2i, -2, -4i; 5, 4i, 4)\n\nNote. The matrices are formatted such that each row of the matrix is separated by a semicolon.  \n\nBased on these matrices, choose the correct statement.",

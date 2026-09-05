@@ -1,6 +1,17 @@
 {
  "run": "q35-default8-gpqa",
  "model": "Qwen 3.6 35B A3B (reference implementation)",
+ "generation_config": {
+  "temperature": 0.0,
+  "top_p": 1.0,
+  "seed": 42,
+  "few_shot": 0,
+  "max_tokens_requested": 61440,
+  "server_ctx": 65536,
+  "eval_batch_size": 1,
+  "decoding": "serial",
+  "note": "max_tokens effective per call was 8192/30720/61440 across the 8K->30K->60K escalation; a row's budget is recoverable from output_tokens when truncated"
+ },
  "question_id": 54,
  "domain": "chemistry",
  "question": "You have prepared an unknown organic compound. The following 1H NMR data was obtained:\n1H NMR: chemical reference (ppm): 7.0 (1H, d, J = 16.0 Hz), 5.5 (1H, dq), 2.1 (3H, s), 1.6 (3H, d)\nIdentify the unknown compound as either Cis-propenyl acetate, Trans-propenyl acetate, Cis-butenyl acetate, or Trans-butenyl acetate.",

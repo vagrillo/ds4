@@ -1,6 +1,17 @@
 {
  "run": "q35-default8-gpqa",
  "model": "Qwen 3.6 35B A3B (reference implementation)",
+ "generation_config": {
+  "temperature": 0.0,
+  "top_p": 1.0,
+  "seed": 42,
+  "few_shot": 0,
+  "max_tokens_requested": 61440,
+  "server_ctx": 65536,
+  "eval_batch_size": 1,
+  "decoding": "serial",
+  "note": "max_tokens effective per call was 8192/30720/61440 across the 8K->30K->60K escalation; a row's budget is recoverable from output_tokens when truncated"
+ },
  "question_id": 154,
  "domain": "physics",
  "question": "Imagine an operator $\\vec{P}$ of a system have components $P_x, P_y$ and $P_z$. The matrix form of the  operator $P_x$ has components in the first row as $(0, \\hbar/\\sqrt{2}, 0)$, that in the second row as $(\\hbar/\\sqrt{2}, 0, \\hbar/\\sqrt{2})$ and that in the third row as $(0,\\hbar/\\sqrt{2},0)$.  The matrix form of the  operator $P_y$ has components in the first row as $(0, -i \\hbar/\\sqrt{2}, 0)$, that in the second row as $(i \\hbar/\\sqrt{2}, 0, -i \\hbar/\\sqrt{2})$ and that in the third row as $(0,i \\hbar/\\sqrt{2},0)$. Similarly, matrix form of the  operator $P_z$ has components in the first row as $(\\hbar, 0, 0)$, that in the second row as $(0, 0, 0)$ and that in the third row as $(0,0, -\\hbar)$. The basis vectors here are the eigenvectors of $P_z$. The system is found in the eigenstate of $P_x$ corresponding to the eigenvalue $-\\hbar$. To be more specific, the explicit form of the state of the system is given by the column vector having elements $(-1/2, 1/\\sqrt{2}, -1/2)$. What is the uncertainty $\\Delta P_z $ of $P_z$",

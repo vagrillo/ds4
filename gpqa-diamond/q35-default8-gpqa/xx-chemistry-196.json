@@ -1,6 +1,17 @@
 {
  "run": "q35-default8-gpqa",
  "model": "Qwen 3.6 35B A3B (reference implementation)",
+ "generation_config": {
+  "temperature": 0.0,
+  "top_p": 1.0,
+  "seed": 42,
+  "few_shot": 0,
+  "max_tokens_requested": 61440,
+  "server_ctx": 65536,
+  "eval_batch_size": 1,
+  "decoding": "serial",
+  "note": "max_tokens effective per call was 8192/30720/61440 across the 8K->30K->60K escalation; a row's budget is recoverable from output_tokens when truncated"
+ },
  "question_id": 196,
  "domain": "chemistry",
  "question": "Compound X, which has the following IR and NMR data, reacts with red phosphorus and HI. Identify the final product.\nIR: 3400–2500 cm-1, 1720 cm-1, 1610 cm-1, 1450 cm-1\n1H NMR: 10.5 ppm (bs, 1H), 8.0 ppm (d, 2H), 7.2 ppm (d, 2H), 2.9 ppm (m, 1H), 1.7 ppm (m, 2H), 1.4 ppm (d, 3H), 0.9 ppm (t, 3H).",

@@ -1,6 +1,20 @@
 {
  "run": "q35-exp20-thr08-gate27-39-gpqa",
  "model": "Qwen 3.6 35B A3B->A4B+ (expert expansion)",
+ "generation_config": {
+  "temperature": 0.0,
+  "top_p": 1.0,
+  "seed": 42,
+  "few_shot": 0,
+  "max_tokens_requested": 61440,
+  "server_ctx": 65536,
+  "eval_batch_size": 1,
+  "decoding": "serial",
+  "note": "max_tokens effective per call was 8192/30720/61440 across the 8K->30K->60K escalation; a row's budget is recoverable from output_tokens when truncated",
+  "q35_experts": 20,
+  "q35_expert_threshold": 0.8,
+  "env_DS4_METAL_QWEN35_SOURCE": "metal/qwen35_lay_last.metal"
+ },
  "question_id": 12,
  "domain": "chemistry",
  "question": "A methanol solution of (R)-(+)-Limonene is stirred with Pd/C under a Hydrogen atmosphere. After 1 equivalent of hydrogen is consumed, product 1 is isolated as the major product.\n\n1 is treated with 3-chloroperbenzoic acid, forming product 2.\n\nProduct 2 is treated with sodium methoxide, forming product 3.\n\nProduct 3 is treated with propanoic acid, dicyclohexylcarbodiimide. and a catalytic amount of  4-dimethylaminopyridine, forming product 4.\n\nwhat is a valid structure of product 4? (product 4 exists as a mixture of isomers. the correct answer is one of them).",
