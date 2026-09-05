@@ -95,6 +95,8 @@ def run_capture(
         str(ds4),
         "-m", str(model),
         "--ctx", str(ctx),
+        "--ssd-streaming",
+	"--nothink",
         "--prompt-file", str(prompt_path),
         "-n", "1",
     ]
