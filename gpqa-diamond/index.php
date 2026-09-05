@@ -71,6 +71,10 @@ function h(?string $s): string { return htmlspecialchars((string)$s, ENT_QUOTES,
 function fmt(int|float|null $n, int $d = 0): string {
     return $n === null ? '–' : number_format((float)$n, $d, ',', ' ');
 }
+// chiavi di generation_config mostrate una volta sola nel pannello domanda;
+// le restanti (specifiche del run) compaiono come pill nel pannello del run
+$SHARED_GC = ['temperature','top_p','seed','few_shot','max_tokens_requested',
+              'server_ctx','eval_batch_size','decoding','note'];
 $resBadge = ['correct' => 'ok', 'wrong' => 'ko', 'trunc' => 'tr'];
 $resWord  = ['correct' => 'corretta', 'wrong' => 'errata', 'trunc' => 'troncata'];
 ?>
@@ -224,6 +228,48 @@ details summary{cursor:pointer;color:var(--acc);font-size:13px;margin-top:8px}
       </div>
     <?php endforeach; ?>
   </div>
+
+  <?php // generation_config in coda: parametri comuni una volta, extra per run come pill
+    $gcShared = null; $gcExtras = [];
+    foreach ($files as $run => $d) {
+      $gc = $d['generation_config'] ?? null;
+      if (!is_array($gc)) continue;
+      if ($gcShared === null) $gcShared = $gc;
+      $ex = [];
+      foreach ($gc as $k => $v) {
+        if (!in_array($k, $SHARED_GC, true) && $k !== 'note') $ex[$k] = $v;
+      }
+      if ($ex) $gcExtras[$run] = $ex;
+    }
+    $vstr = function($v): string {
+      return is_scalar($v) ? (string)$v : (string)json_encode($v);
+    };
+  ?>
+  <?php if ($gcShared !== null): ?>
+  <div class="panel" style="margin-top:14px">
+    <div class="sec" style="margin-top:0">
+      <h3>Parametri di generazione</h3>
+      <div class="pillrow">
+        <?php foreach ($gcShared as $k => $v): if (!in_array($k, $SHARED_GC, true)) continue; ?>
+          <span class="pill"><b><?= h((string)$k) ?></b> = <?= h($vstr($v)) ?></span>
+        <?php endforeach; ?>
+      </div>
+    </div>
+    <?php foreach ($gcExtras as $run => $ex): ?>
+      <div class="sec">
+        <h3>Specifici · <?= h($RUNS[$run]) ?></h3>
+        <div class="pillrow">
+          <?php foreach ($ex as $k => $v): ?>
+            <span class="pill"><b><?= h((string)$k) ?></b> = <?= h($vstr($v)) ?></span>
+          <?php endforeach; ?>
+        </div>
+      </div>
+    <?php endforeach; ?>
+    <?php if (!empty($gcShared['note'])): ?>
+      <div class="meta" style="margin-top:10px"><?= h((string)$gcShared['note']) ?></div>
+    <?php endif; ?>
+  </div>
+  <?php endif; ?>
 <?php endif; ?>
 
 <footer>File locali generati da <code>evalscope/export_gpqa_perdir.py</code> · pagina statica PHP, nessun dato inviato altrove.</footer>
