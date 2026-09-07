@@ -1,3 +1,14 @@
+# Llama.cpp implemetation of Dynamic MoE inference 
+
+We implemented the same architecture  in **llama.cpp**
+
+https://github.com/vagrillo/llama.cpp/blob/moe-expansion/docs/moe-expansion.md
+
+Tested MOE Expansion vs Native inference:
+
+https://github.com/vagrillo/llama.cpp/blob/moe-expansion/benchmark/GPQA/report_gpqa_moe.md
+
+
 # Dynamic MoE inference: scaling routed experts up and down
 
 DwarfStar can change, at inference time, how many routed experts each token
